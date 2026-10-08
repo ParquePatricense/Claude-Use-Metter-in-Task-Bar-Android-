@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/w_root"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+<ImageView android:id="@+id/w_bg" android:layout_width="match_parent" android:layout_height="match_parent"
+    android:src="@drawable/widget_bg" android:scaleType="fitXY"/>
+<LinearLayout android:id="@+id/w_content" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="12dp">
+<ViewFlipper android:id="@+id/w_flip" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:flipInterval="900" android:autoStart="true">
+<ImageView android:id="@+id/w_ring" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="fitCenter"/>
+<ImageView android:id="@+id/w_ring2" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="fitCenter"/>
+</ViewFlipper>
+<TextView android:id="@+id/w_left" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#FFFFFF" android:textSize="13sp" android:textStyle="bold" android:gravity="center" android:layout_marginTop="6dp" android:singleLine="true" android:ellipsize="end" android:text=""/>
+<TextView android:id="@+id/w_wshort" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#CCFFFFFF" android:textSize="12sp" android:layout_marginTop="4dp" android:singleLine="true" android:ellipsize="end" android:text=""/>
+<ImageView android:id="@+id/w_wbar" android:layout_width="match_parent" android:layout_height="6dp" android:layout_marginTop="4dp" android:layout_marginBottom="8dp" android:scaleType="fitXY"/>
+</LinearLayout>
+</FrameLayout>

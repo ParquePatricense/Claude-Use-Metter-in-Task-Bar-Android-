@@ -1,0 +1,7 @@
+# Nunca subir la llave de firma
+*.jks
+*.keystore
+# Archivos generados
+build/
+*.apk
+android.jar

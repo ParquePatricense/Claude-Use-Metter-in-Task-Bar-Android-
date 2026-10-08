@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+    <TextView android:id="@+id/n_session" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:textAppearance="@android:style/TextAppearance.Material.Notification.Title"/>
+    <ImageView android:id="@+id/n_sbar" android:layout_width="match_parent" android:layout_height="8dp"
+        android:layout_marginTop="6dp" android:layout_marginBottom="10dp" android:scaleType="fitXY"/>
+    <TextView android:id="@+id/n_week" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:textAppearance="@android:style/TextAppearance.Material.Notification.Title"/>
+    <ImageView android:id="@+id/n_wbar" android:layout_width="match_parent" android:layout_height="8dp"
+        android:layout_marginTop="6dp" android:scaleType="fitXY"/>
+    <TextView android:id="@+id/n_extra" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginTop="8dp" android:textAppearance="@android:style/TextAppearance.Material.Notification"/>
+</LinearLayout>
