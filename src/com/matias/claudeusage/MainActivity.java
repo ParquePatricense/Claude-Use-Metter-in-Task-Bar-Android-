@@ -105,7 +105,7 @@ public class MainActivity extends Activity {
         if (ACTION_REFRESH.equals(i.getAction())) {
             startForegroundService(new Intent(this, UsageService.class).setAction(UsageService.ACTION_REFRESH)
                     .putExtra(UsageService.EXTRA_HAPTIC, true));
-            Toast.makeText(this, "Actualizando…", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, L.t("Actualizando…"), Toast.LENGTH_SHORT).show();
             return true;
         }
         if (ACTION_CHART.equals(i.getAction())) { chartSpan = 7 * History.DAY; return true; }
@@ -139,11 +139,11 @@ public class MainActivity extends Activity {
         addingAccount = add;
         handler.removeCallbacksAndMessages(null);
         LinearLayout root = column();
-        TextView t = text(add ? "Iniciá sesión con la otra cuenta de Claude." :
-                "Iniciá sesión en Claude. Cuando entres, la app se configura sola.", 15, th.fg);
+        TextView t = text(add ? L.t("Iniciá sesión con la otra cuenta de Claude.") :
+                L.t("Iniciá sesión en Claude. Cuando entres, la app se configura sola."), 15, th.fg);
         t.setPadding(dp(16), dp(16), dp(16), dp(8));
         root.addView(t);
-        Button manual = button("Pegar sessionKey a mano");
+        Button manual = button(L.t("Pegar sessionKey a mano"));
         manual.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) { askKey(); }
         });
@@ -182,7 +182,7 @@ public class MainActivity extends Activity {
         new AlertDialog.Builder(this)
                 .setTitle("sessionKey")
                 .setView(in)
-                .setPositiveButton("Guardar", new DialogInterface.OnClickListener() {
+                .setPositiveButton(L.t("Guardar"), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dlg, int w) {
                         String k = in.getText().toString().trim();
                         if (k.startsWith("sessionKey=")) k = k.substring(11);
@@ -190,7 +190,7 @@ public class MainActivity extends Activity {
                         loggedIn("sessionKey=" + k, null);
                     }
                 })
-                .setNegativeButton("Cancelar", null)
+                .setNegativeButton(L.t("Cancelar"), null)
                 .show();
     }
 
@@ -300,10 +300,10 @@ public class MainActivity extends Activity {
         final TextView predict = text("", 14, th.accent);
         predict.setGravity(Gravity.CENTER);
         final HeatmapView heat = new HeatmapView(this);
-        final Button t24 = button("24 h"), t7 = button("7 días");
+        final Button t24 = button("24 h"), t7 = button(L.t("7 días"));
 
         if (zen) {
-            Button exit = button("Salir del modo zen");
+            Button exit = button(L.t("Salir del modo zen"));
             exit.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) { p.edit().putBoolean("zen", false).apply(); showMain(); }
             });
@@ -311,7 +311,7 @@ public class MainActivity extends Activity {
         } else {
             root.addView(extra);
             root.addView(predict, margins(0, 6, 0, 0));
-            Button enough = button("¿Me alcanza?");
+            Button enough = button(L.t("¿Me alcanza?"));
             enough.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { askEnough(); } });
             root.addView(enough, margins(0, 12, 0, 0));
 
@@ -327,14 +327,14 @@ public class MainActivity extends Activity {
             st.setGravity(Gravity.CENTER);
             st.setPadding(0, dp(16), 0, dp(12));
             root.addView(st);
-            Button refresh = button("Actualizar ahora");
+            Button refresh = button(L.t("Actualizar ahora"));
             refresh.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     startForegroundService(new Intent(MainActivity.this, UsageService.class).setAction(UsageService.ACTION_REFRESH));
                 }
             });
             root.addView(refresh);
-            Button settings = button("Ajustes");
+            Button settings = button(L.t("Ajustes"));
             settings.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { showSettings(); } });
             root.addView(settings);
         }
@@ -369,10 +369,10 @@ public class MainActivity extends Activity {
                 extra.setVisibility(u.extra != null ? View.VISIBLE : View.GONE);
                 if (u.updated != shown && !zen) { shown = u.updated; reloadChart[0].run(); }
                 String upd = u.updated > 0
-                        ? "Actualizado hace " + ago(System.currentTimeMillis() - u.updated)
-                        + (p.getBoolean("smart", true) ? " · intervalo inteligente" : " · cada 30 s")
-                        : "Conectando…";
-                st.setText(u.error != null ? upd + "\nÚltimo error: " + u.error : upd);
+                        ? L.t("Actualizado hace ") + ago(System.currentTimeMillis() - u.updated)
+                        + (p.getBoolean("smart", true) ? L.t(" · intervalo inteligente") : L.t(" · cada 30 s"))
+                        : L.t("Conectando…");
+                st.setText(u.error != null ? upd + L.t("\nÚltimo error: ") + u.error : upd);
                 // Confeti si la sesión se reinició hace poco
                 long lr = p.getLong("lastReset", 0);
                 if (p.getBoolean("confetti", true) && p.getBoolean("anim", true) && lr > p.getLong("confettiShown", 0)
@@ -388,20 +388,20 @@ public class MainActivity extends Activity {
 
     /** ¿Me alcanza la sesión para X tiempo más, a mi ritmo actual? */
     private void askEnough() {
-        final String[] opts = {"30 minutos", "1 hora", "2 horas"};
+        final String[] opts = {L.t("30 minutos"), L.t("1 hora"), L.t("2 horas")};
         final double[] hours = {0.5, 1, 2};
-        new AlertDialog.Builder(this).setTitle("¿Me alcanza para…?")
+        new AlertDialog.Builder(this).setTitle(L.t("¿Me alcanza para…?"))
                 .setItems(opts, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dlg, int which) {
                         new AlertDialog.Builder(MainActivity.this).setTitle(opts[which])
-                                .setMessage(enoughText(hours[which])).setPositiveButton("Ok", null).show();
+                                .setMessage(enoughText(hours[which])).setPositiveButton(L.t("Ok"), null).show();
                     }
                 }).show();
     }
 
     private String enoughText(double h) {
         Usage u = Usage.load(this);
-        if (!u.hasData()) return "Todavía no hay datos.";
+        if (!u.hasData()) return L.t("Todavía no hay datos.");
         long now = System.currentTimeMillis();
         List<History.Point> pts = History.load(this, now - 90 * 60_000L);
         History.Point first = null, last = null;
@@ -416,19 +416,19 @@ public class MainActivity extends Activity {
         }
         int left = 100 - u.pct;
         double untilReset = u.reset > 0 ? (u.reset - now) / 3_600_000.0 : 5;
-        if (left <= 0) return "Ya llegaste al límite ✖\n" + u.resetLine() + ".";
-        if (rate <= 0.5) return "Sí ✔\nTu ritmo de la última hora es casi nulo. Te queda " + left + "% de la sesión.";
-        String r = "Tu ritmo: " + Math.round(rate) + "% por hora. Te queda " + left + "%.\n\n";
+        if (left <= 0) return L.t("Ya llegaste al límite ✖\n") + u.resetLine() + ".";
+        if (rate <= 0.5) return L.t("Sí ✔\nTu ritmo de la última hora es casi nulo. Te queda ") + left + L.t("% de la sesión.");
+        String r = L.t("Tu ritmo: ") + Math.round(rate) + L.t("% por hora. Te queda ") + left + L.t("%.\n\n");
         double usable = Math.min(h, untilReset);
         double need = rate * usable;
         if (need <= left) {
-            r += "Sí ✔ En ese tiempo usarías ~" + Math.round(need) + "%.";
+            r += L.t("Sí ✔ En ese tiempo usarías ~") + Math.round(need) + "%.";
         } else {
             long limitAt = now + (long) (left / rate * 3_600_000);
-            r += "Justo no ✖ A tu ritmo llegás al límite a las " + Usage.clock(limitAt)
-                    + " (en " + Usage.left(limitAt) + ").";
+            r += L.t("Justo no ✖ A tu ritmo llegás al límite a las ") + Usage.clock(limitAt)
+                    + L.t(" (en ") + Usage.left(limitAt) + ").";
         }
-        if (u.reset > 0 && h > untilReset) r += "\n\nA las " + Usage.clock(u.reset) + " se reinicia la sesión y volvés a 0%.";
+        if (u.reset > 0 && h > untilReset) r += L.t("\n\nA las ") + Usage.clock(u.reset) + L.t(" se reinicia la sesión y volvés a 0%.");
         return r;
     }
 
@@ -440,30 +440,30 @@ public class MainActivity extends Activity {
     }
 
     private void fillStats(TextView stats, TextView daily, History.Stats s, History.Stats prev) {
-        StringBuilder a = new StringBuilder("Estadísticas · 7 días\n\n");
-        a.append("Pico diario promedio: ").append(s.avgPeak < 0 ? "–" : s.avgPeak + "%").append('\n');
-        a.append("Sesiones usadas: ").append(s.sessions).append('\n');
-        a.append("Veces que llegaste al límite: ").append(s.limits).append('\n');
-        a.append("Racha sin llegar al límite: ").append(s.streak).append(s.streak == 1 ? " día" : " días").append(s.streak >= 3 ? " 🔥" : "").append('\n');
-        a.append("Horario de más uso: ").append(s.topHour < 0 ? "–" : String.format(Locale.US, "%02d–%02d h", s.topHour, (s.topHour + 1) % 24));
+        StringBuilder a = new StringBuilder(L.t("Estadísticas · 7 días\n\n"));
+        a.append(L.t("Pico diario promedio: ")).append(s.avgPeak < 0 ? "–" : s.avgPeak + "%").append('\n');
+        a.append(L.t("Sesiones usadas: ")).append(s.sessions).append('\n');
+        a.append(L.t("Veces que llegaste al límite: ")).append(s.limits).append('\n');
+        a.append(L.t("Racha sin llegar al límite: ")).append(s.streak).append(s.streak == 1 ? L.t(" día") : L.t(" días")).append(s.streak >= 3 ? " 🔥" : "").append('\n');
+        a.append(L.t("Horario de más uso: ")).append(s.topHour < 0 ? "–" : String.format(Locale.US, "%02d–%02d h", s.topHour, (s.topHour + 1) % 24));
         if (prev.avgPeak >= 0 && s.avgPeak >= 0) {
-            a.append("\n\nVs. semana anterior\n");
-            a.append("Pico promedio: ").append(s.avgPeak).append('%').append(delta(s.avgPeak, prev.avgPeak, true)).append('\n');
-            a.append("Sesiones: ").append(s.sessions).append(delta(s.sessions, prev.sessions, false)).append('\n');
-            a.append("Límites: ").append(s.limits).append(delta(s.limits, prev.limits, true));
+            a.append(L.t("\n\nVs. semana anterior\n"));
+            a.append(L.t("Pico promedio: ")).append(s.avgPeak).append('%').append(delta(s.avgPeak, prev.avgPeak, true)).append('\n');
+            a.append(L.t("Sesiones: ")).append(s.sessions).append(delta(s.sessions, prev.sessions, false)).append('\n');
+            a.append(L.t("Límites: ")).append(s.limits).append(delta(s.limits, prev.limits, true));
         }
         stats.setText(a.toString());
 
-        StringBuilder b = new StringBuilder("Resumen diario\n");
-        DateTimeFormatter f = DateTimeFormatter.ofPattern("EEE d/M", new Locale("es"));
+        StringBuilder b = new StringBuilder(L.t("Resumen diario\n"));
+        DateTimeFormatter f = DateTimeFormatter.ofPattern("EEE d/M", Locale.getDefault());
         LocalDate today = LocalDate.now(ZoneId.systemDefault());
         for (History.Day day : s.days) {
-            String name = day.date.equals(today) ? "Hoy" : day.date.equals(today.minusDays(1)) ? "Ayer" : day.date.format(f);
+            String name = day.date.equals(today) ? L.t("Hoy") : day.date.equals(today.minusDays(1)) ? L.t("Ayer") : day.date.format(f);
             b.append('\n').append(name).append(": ");
-            if (day.peak < 0) { b.append("sin datos"); continue; }
-            b.append("pico ").append(day.peak).append("% · ").append(day.sessions)
-                    .append(day.sessions == 1 ? " sesión" : " sesiones");
-            if (day.limits > 0) b.append(" · ").append(day.limits).append(day.limits == 1 ? " límite" : " límites");
+            if (day.peak < 0) { b.append(L.t("sin datos")); continue; }
+            b.append(L.t("pico ")).append(day.peak).append("% · ").append(day.sessions)
+                    .append(day.sessions == 1 ? L.t(" sesión") : L.t(" sesiones"));
+            if (day.limits > 0) b.append(" · ").append(day.limits).append(day.limits == 1 ? L.t(" límite") : L.t(" límites"));
         }
         daily.setText(b.toString());
     }
@@ -508,14 +508,14 @@ public class MainActivity extends Activity {
         root.setBackgroundColor(android.graphics.Color.TRANSPARENT);
         root.setPadding(dp(20), dp(20), dp(20), dp(32));
         scroll.addView(root, contentParams());
-        root.addView(text("Ajustes", 26, th.fg));
+        root.addView(text(L.t("Ajustes"), 26, th.fg));
 
         // Cuentas
-        section(root, "Cuenta");
+        section(root, L.t("Cuenta"));
         JSONArray accs = Prefs.accounts(this);
         RadioGroup ag = new RadioGroup(this);
         for (int i = 0; i < accs.length(); i++) {
-            RadioButton rb = radio(accs.optJSONObject(i).optString("name", "Cuenta " + (i + 1)));
+            RadioButton rb = radio(accs.optJSONObject(i).optString("name", L.t("Cuenta ") + (i + 1)));
             rb.setId(1000 + i);
             ag.addView(rb);
         }
@@ -524,33 +524,33 @@ public class MainActivity extends Activity {
             public void onCheckedChanged(RadioGroup g, int id) { switchTo(id - 1000); }
         });
         root.addView(ag);
-        Button add = button("Agregar otra cuenta");
+        Button add = button(L.t("Agregar otra cuenta"));
         add.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { addAccount(); } });
         root.addView(add);
-        Button re = button("Volver a iniciar sesión en esta cuenta");
+        Button re = button(L.t("Volver a iniciar sesión en esta cuenta"));
         re.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { relogin(); } });
         root.addView(re);
-        Button del = button("Quitar esta cuenta");
+        Button del = button(L.t("Quitar esta cuenta"));
         del.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 new AlertDialog.Builder(MainActivity.this)
-                        .setMessage("¿Quitar \"" + accountName() + "\" de la app? Se borra su historial.")
-                        .setPositiveButton("Quitar", new DialogInterface.OnClickListener() {
+                        .setMessage(L.t("¿Quitar \"") + accountName() + L.t("\" de la app? Se borra su historial."))
+                        .setPositiveButton(L.t("Quitar"), new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dlg, int w) {
                                 History.file(MainActivity.this).delete();
                                 Prefs.removeActive(MainActivity.this);
                                 applyAccount();
                             }
                         })
-                        .setNegativeButton("Cancelar", null).show();
+                        .setNegativeButton(L.t("Cancelar"), null).show();
             }
         });
         root.addView(del);
 
         // Tema
-        section(root, "Tema");
+        section(root, L.t("Tema"));
         RadioGroup tg = new RadioGroup(this);
-        String[] themes = {"Como el sistema", "Claro", "Oscuro"};
+        String[] themes = {L.t("Como el sistema"), L.t("Claro"), L.t("Oscuro")};
         for (int i = 0; i < 3; i++) { RadioButton rb = radio(themes[i]); rb.setId(2000 + i); tg.addView(rb); }
         tg.check(2000 + p.getInt("theme", 0));
         tg.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -560,31 +560,31 @@ public class MainActivity extends Activity {
             }
         });
         root.addView(tg);
-        root.addView(toggle("Negro puro AMOLED en modo oscuro (ahorra batería)", "amoled", false));
+        root.addView(toggle(L.t("Negro puro AMOLED en modo oscuro (ahorra batería)"), "amoled", false));
 
         // Apariencia
-        section(root, "Apariencia");
-        groupedChoice(root, "Paleta", Theme.PAL_CATS, Theme.PAL_GROUPS, Theme.PALETTES, p.getInt("palette", 0), new Pick() {
+        section(root, L.t("Apariencia"));
+        groupedChoice(root, L.t("Paleta"), Theme.PAL_CATS, Theme.PAL_GROUPS, Theme.PALETTES, p.getInt("palette", 0), new Pick() {
             public void picked(int i) { p.edit().putInt("palette", i).apply(); refreshAll(); recreate(); }
         });
-        groupedChoice(root, "Tipografía", null, null, Theme.FONTS, p.getInt("font", 0), new Pick() {
+        groupedChoice(root, L.t("Tipografía"), null, null, Theme.FONTS, p.getInt("font", 0), new Pick() {
             public void picked(int i) { p.edit().putInt("font", i).apply(); refreshAll(); recreate(); }
         });
-        groupedChoice(root, "Medidor de la app", null, null, GaugeView.METERS, p.getInt("meter", 0), new Pick() {
+        groupedChoice(root, L.t("Medidor de la app"), null, null, GaugeView.METERS, p.getInt("meter", 0), new Pick() {
             public void picked(int i) { p.edit().putInt("meter", i).apply(); }
         });
-        root.addView(toggle("Modo zen (solo el número y el tiempo)", "zen", false));
-        groupedChoice(root, "Fondo animado", null, null, BgView.KINDS, p.getInt("bg", 0), new Pick() {
+        root.addView(toggle(L.t("Modo zen (solo el número y el tiempo)"), "zen", false));
+        groupedChoice(root, L.t("Fondo animado"), null, null, BgView.KINDS, p.getInt("bg", 0), new Pick() {
             public void picked(int i) { p.edit().putInt("bg", i).apply(); showSettings(); }
         });
-        root.addView(toggle("Filtro retro CRT", "crt", false));
-        root.addView(toggle("Transiciones animadas entre pantallas", "transitions", true));
+        root.addView(toggle(L.t("Filtro retro CRT"), "crt", false));
+        root.addView(toggle(L.t("Transiciones animadas entre pantallas"), "transitions", true));
 
         // Mascota
-        section(root, "Mascota");
-        root.addView(toggle("Estilo chibi (más chiquita, tipo bebé)", "chibi", false));
-        root.addView(toggle("Una mascota distinta cada día", "randomDaily", false));
-        groupedChoice(root, "Elegir mascota", MascotData.CAT_NAMES, MascotData.CATS, Mascots.names(), Mascots.current(this), new Pick() {
+        section(root, L.t("Mascota"));
+        root.addView(toggle(L.t("Estilo chibi (más chiquita, tipo bebé)"), "chibi", false));
+        root.addView(toggle(L.t("Una mascota distinta cada día"), "randomDaily", false));
+        groupedChoice(root, L.t("Elegir mascota"), MascotData.CAT_NAMES, MascotData.CATS, Mascots.names(), Mascots.current(this), new Pick() {
             public void picked(int i) {
                 p.edit().putString("mascotKey", MascotData.KEYS[i]).apply();
                 Achievements.sawMascot(MainActivity.this, i);
@@ -592,83 +592,83 @@ public class MainActivity extends Activity {
                 refreshAll();
             }
         });
-        root.addView(toggle("Mostrar la mascota arriba", "mascot", true));
-        root.addView(toggle("Ícono de la app = tu mascota", "mascotIcon", false));
-        root.addView(toggle("Sonidos 8-bit (avisos, tocar la mascota, confeti)", "sounds", true));
+        root.addView(toggle(L.t("Mostrar la mascota arriba"), "mascot", true));
+        root.addView(toggle(L.t("Ícono de la app = tu mascota"), "mascotIcon", false));
+        root.addView(toggle(L.t("Sonidos 8-bit (avisos, tocar la mascota, confeti)"), "sounds", true));
 
         // Logros
-        section(root, "Logros · " + Achievements.count(this) + " de " + Achievements.ALL.length);
+        section(root, L.t("Logros · ") + Achievements.count(this) + L.t(" de ") + Achievements.ALL.length);
         StringBuilder got = new StringBuilder(), todo = new StringBuilder();
         int pending = 0;
         for (String[] a : Achievements.ALL) {
             if (Achievements.has(this, a[0])) got.append("★ ").append(a[1]).append(" — ").append(a[2]).append('\n');
             else { todo.append("☆ ").append(a[1]).append(" — ").append(a[2]).append('\n'); pending++; }
         }
-        TextView achT = text(got.length() > 0 ? got.toString().trim() : "Todavía no conseguiste ninguno.", 14, th.fg);
+        TextView achT = text(got.length() > 0 ? got.toString().trim() : L.t("Todavía no conseguiste ninguno."), 14, th.fg);
         achT.setLineSpacing(0, 1.25f);
         root.addView(achT);
         if (pending > 0) {
-            LinearLayout hidden = collapsible(root, "logros", "Ver los que podés conseguir (" + pending + ")", false);
+            LinearLayout hidden = collapsible(root, "logros", L.t("Ver los que podés conseguir (") + pending + ")", false);
             TextView t2 = text(todo.toString().trim(), 14, th.dim);
             t2.setLineSpacing(0, 1.25f);
             hidden.addView(t2);
         }
         // Barra de estado y notificación
-        section(root, "Barra de estado y notificación");
-        root.addView(text("Android pinta los íconos de la barra de estado del mismo color que la hora. Para que el número no se confunda, elegí una forma distinta:", 13, th.dim));
+        section(root, L.t("Barra de estado y notificación"));
+        root.addView(text(L.t("Android pinta los íconos de la barra de estado del mismo color que la hora. Para que el número no se confunda, elegí una forma distinta:"), 13, th.dim));
         if (p.getInt("statusIcon", 1) > 2) p.edit().putInt("statusIcon", 1).apply();
-        root.addView(choiceList(new String[]{"Número grande", "Número con marco", "Número dentro de un anillo"}, "statusIcon", 7100, false));
-        root.addView(text("Imagen de la notificación", 15, th.fg), margins(0, 8, 0, 0));
-        root.addView(choiceList(new String[]{"Tu mascota", "El estilo del widget", "Solo el ícono de la app"}, "nIcon", 7300, false));
-        root.addView(text("Botones de la notificación (hasta 3)", 15, th.fg), margins(0, 8, 0, 0));
-        root.addView(toggle("Actualizar", "actRefresh", true));
-        root.addView(toggle("Ir a Claude", "goClaude", true));
+        root.addView(choiceList(new String[]{L.t("Número grande"), L.t("Número con marco"), L.t("Número dentro de un anillo")}, "statusIcon", 7100, false));
+        root.addView(text(L.t("Imagen de la notificación"), 15, th.fg), margins(0, 8, 0, 0));
+        root.addView(choiceList(new String[]{L.t("Tu mascota"), L.t("El estilo del widget"), L.t("Solo el ícono de la app")}, "nIcon", 7300, false));
+        root.addView(text(L.t("Botones de la notificación (hasta 3)"), 15, th.fg), margins(0, 8, 0, 0));
+        root.addView(toggle(L.t("Actualizar"), "actRefresh", true));
+        root.addView(toggle(L.t("Ir a Claude"), "goClaude", true));
         root.addView(toggle("Claude Code", "actCode", true));
-        root.addView(toggle("Ver uso en Claude", "actUsage", false));
+        root.addView(toggle(L.t("Ver uso en Claude"), "actUsage", false));
 
         // Animaciones
-        section(root, "Animaciones");
-        root.addView(toggle("Animaciones (medidor, gráfico, mascota)", "anim", true));
-        groupedChoice(root, "Fluidez de la app", null, null, Fps.labels(this), indexOfFps(p.getInt("appFps", 0)), new Pick() {
+        section(root, L.t("Animaciones"));
+        root.addView(toggle(L.t("Animaciones (medidor, gráfico, mascota)"), "anim", true));
+        groupedChoice(root, L.t("Fluidez de la app"), null, null, Fps.labels(this), indexOfFps(p.getInt("appFps", 0)), new Pick() {
             public void picked(int i) { p.edit().putInt("appFps", Fps.OPTIONS[i]).apply(); applyRefreshRate(); }
         });
-        root.addView(toggle("Pulso cuando pasás el 90%", "pulse", true));
-        root.addView(toggle("Confeti cuando se reinicia la sesión", "confetti", true));
-        root.addView(toggle("Segundos en la cuenta regresiva", "seconds", true));
+        root.addView(toggle(L.t("Pulso cuando pasás el 90%"), "pulse", true));
+        root.addView(toggle(L.t("Confeti cuando se reinicia la sesión"), "confetti", true));
+        root.addView(toggle(L.t("Segundos en la cuenta regresiva"), "seconds", true));
 
         // Actualización y avisos
-        section(root, "Actualización y avisos");
-        root.addView(toggle("Intervalo inteligente (ahorra batería)\n30 s mientras usás Claude, más lento si está quieto o con la pantalla apagada",
+        section(root, L.t("Actualización y avisos"));
+        root.addView(toggle(L.t("Intervalo inteligente (ahorra batería)\n30 s mientras usás Claude, más lento si está quieto o con la pantalla apagada"),
                 "smart", true));
-        root.addView(toggle("Avisar 5 min antes del reinicio de la sesión", "preReset", true));
-        root.addView(toggle("Resumen semanal los lunes", "weekly", true));
-        root.addView(toggle("Vibraciones con patrón\n75%: 2 cortas · 90%: 3 cortas · 100%: 1 larga · reinicio: corta + larga", "vibePatterns", true));
-        root.addView(toggle("Modo ahorro automático\nCon menos de 20% de batería (sin cargar) o con el ahorro de energía activo: 30 FPS, sin fondo animado y widget quieto"
-                + (Power.saving(this) ? "\nAhora: ACTIVO" : ""), "autoSave", true));
+        root.addView(toggle(L.t("Avisar 5 min antes del reinicio de la sesión"), "preReset", true));
+        root.addView(toggle(L.t("Resumen semanal los lunes"), "weekly", true));
+        root.addView(toggle(L.t("Vibraciones con patrón\n75%: 2 cortas · 90%: 3 cortas · 100%: 1 larga · reinicio: corta + larga"), "vibePatterns", true));
+        root.addView(toggle(L.t("Modo ahorro automático\nCon menos de 20% de batería (sin cargar) o con el ahorro de energía activo: 30 FPS, sin fondo animado y widget quieto")
+                + (Power.saving(this) ? L.t("\nAhora: ACTIVO") : ""), "autoSave", true));
 
         // Modos del teléfono y automatización
-        section(root, "Modos y automatización");
-        root.addView(toggle("Modo \"Concentración Claude\": activa No molestar al llegar al límite y lo apaga solo al reiniciarse la sesión", "focusMode", false));
-        root.addView(text("Activar al llegar al", 15, th.fg), margins(0, 8, 0, 0));
+        section(root, L.t("Modos y automatización"));
+        root.addView(toggle(L.t("Modo \"Concentración Claude\": activa No molestar al llegar al límite y lo apaga solo al reiniciarse la sesión"), "focusMode", false));
+        root.addView(text(L.t("Activar al llegar al"), 15, th.fg), margins(0, 8, 0, 0));
         root.addView(choiceList(new String[]{"90%", "100%"}, "focusAtIdx", 7400, false));
         if (!Focus.hasAccess(this)) {
-            Button perm = button("Dar permiso de No molestar");
+            Button perm = button(L.t("Dar permiso de No molestar"));
             perm.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) { startActivity(new Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)); }
             });
             root.addView(perm);
         }
-        root.addView(text("El modo aparece en Ajustes → Notificaciones → No molestar, junto a tus otros modos. "
-                + "Si querés que Samsung haga algo más (por ejemplo, bajar el brillo), creá una rutina en Modos y rutinas con la condición \"No molestar activado\".", 13, th.dim));
-        root.addView(toggle("Avisos para Tasker, MacroDroid y similares\nAcción: " + Focus.EVENT + " · extra \"event\": level75, level90, limit o reset", "broadcast", true));
+        root.addView(text(L.t("El modo aparece en Ajustes → Notificaciones → No molestar, junto a tus otros modos. ")
+                + L.t("Si querés que Samsung haga algo más (por ejemplo, bajar el brillo), creá una rutina en Modos y rutinas con la condición \"No molestar activado\"."), 13, th.dim));
+        root.addView(toggle(L.t("Avisos para Tasker, MacroDroid y similares\nAcción: ") + Focus.EVENT + L.t(" · extra \"event\": level75, level90, limit o reset"), "broadcast", true));
         int[] qw = History.quietWindow(this);
-        root.addView(toggle("No molestar inteligente: avisos en silencio mientras dormís\n"
-                + (qw != null ? String.format(java.util.Locale.US, "Detectado: %02d–%02d h", qw[0], qw[1])
-                : "Todavía aprendiendo tu horario (por ahora 01–08 h)"), "smartDnd", true));
-        root.addView(toggle("Vibrar al actualizar desde el widget o Ajustes rápidos", "haptic", true));
+        root.addView(toggle(L.t("No molestar inteligente: avisos en silencio mientras dormís\n")
+                + (qw != null ? String.format(java.util.Locale.US, L.t("Detectado: %02d–%02d h"), qw[0], qw[1])
+                : L.t("Todavía aprendiendo tu horario (por ahora 01–08 h)")), "smartDnd", true));
+        root.addView(toggle(L.t("Vibrar al actualizar desde el widget o Ajustes rápidos"), "haptic", true));
 
         // Widget
-        section(root, "Widget de inicio");
+        section(root, L.t("Widget de inicio"));
         final TextView alphaLbl = text("", 15, th.fg);
         root.addView(alphaLbl);
         SeekBar sb = new SeekBar(this);
@@ -676,9 +676,9 @@ public class MainActivity extends Activity {
         sb.setThumbTintList(android.content.res.ColorStateList.valueOf(th.accent));
         sb.setMax(100);
         sb.setProgress(p.getInt("wAlpha", 90));
-        alphaLbl.setText("Opacidad del fondo: " + sb.getProgress() + "%");
+        alphaLbl.setText(L.t("Opacidad del fondo: ") + sb.getProgress() + "%");
         sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            public void onProgressChanged(SeekBar s, int v, boolean user) { alphaLbl.setText("Opacidad del fondo: " + v + "%"); }
+            public void onProgressChanged(SeekBar s, int v, boolean user) { alphaLbl.setText(L.t("Opacidad del fondo: ") + v + "%"); }
             public void onStartTrackingTouch(SeekBar s) {}
             public void onStopTrackingTouch(SeekBar s) {
                 p.edit().putInt("wAlpha", s.getProgress()).apply();
@@ -686,23 +686,23 @@ public class MainActivity extends Activity {
             }
         });
         root.addView(sb, margins(0, 4, 0, 12));
-        root.addView(text("Estilo", 15, th.fg));
-        groupedChoice(root, "Estilo del widget", null, null, Art.STYLES, p.getInt("wStyle", 0), new Pick() {
+        root.addView(text(L.t("Estilo"), 15, th.fg));
+        groupedChoice(root, L.t("Estilo del widget"), null, null, Art.STYLES, p.getInt("wStyle", 0), new Pick() {
             public void picked(int i) { p.edit().putInt("wStyle", i).apply(); WidgetProvider.update(MainActivity.this); }
         });
-        root.addView(toggle("Minimalista (solo la imagen, en cualquier tamaño)", "wMinimal", false));
-        root.addView(toggle("Animar el widget", "wAnim", true));
-        groupedChoice(root, "Fluidez del widget", null, null, Fps.labels(this), indexOfFps(p.getInt("wFps2", 60)), new Pick() {
+        root.addView(toggle(L.t("Minimalista (solo la imagen, en cualquier tamaño)"), "wMinimal", false));
+        root.addView(toggle(L.t("Animar el widget"), "wAnim", true));
+        groupedChoice(root, L.t("Fluidez del widget"), null, null, Fps.labels(this), indexOfFps(p.getInt("wFps2", 60)), new Pick() {
             public void picked(int i) { p.edit().putInt("wFps2", Fps.OPTIONS[i]).apply(); WidgetProvider.update(MainActivity.this); }
         });
         int actual = p.getInt("wFpsActual", -1);
-        if (actual >= 0) root.addView(text("Ahora el widget anima a " + (actual > 2 ? actual + " FPS" : actual == 0 ? "0 FPS (quieto)" : "2 cuadros (tu launcher no aceptó más)"), 13, th.dim));
-        root.addView(text("Al tocar el widget", 15, th.fg), margins(0, 8, 0, 0));
-        root.addView(choice(new String[]{"Actualizar", "Abrir la app"}, "wTap", 4000));
+        if (actual >= 0) root.addView(text(L.t("Ahora el widget anima a ") + (actual > 2 ? actual + " FPS" : actual == 0 ? L.t("0 FPS (quieto)") : L.t("2 cuadros (tu launcher no aceptó más)")), 13, th.dim));
+        root.addView(text(L.t("Al tocar el widget"), 15, th.fg), margins(0, 8, 0, 0));
+        root.addView(choice(new String[]{L.t("Actualizar"), L.t("Abrir la app")}, "wTap", 4000));
 
         // Datos
-        section(root, "Datos");
-        Button exp = button("Exportar historial (CSV para Excel)");
+        section(root, L.t("Datos"));
+        Button exp = button(L.t("Exportar historial (CSV para Excel)"));
         exp.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE)
@@ -711,7 +711,7 @@ public class MainActivity extends Activity {
             }
         });
         root.addView(exp);
-        Button bak = button("Copia de seguridad (ajustes + historial)");
+        Button bak = button(L.t("Copia de seguridad (ajustes + historial)"));
         bak.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 startActivityForResult(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE)
@@ -719,7 +719,7 @@ public class MainActivity extends Activity {
             }
         });
         root.addView(bak);
-        Button res = button("Restaurar copia de seguridad");
+        Button res = button(L.t("Restaurar copia de seguridad"));
         res.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE)
@@ -729,36 +729,36 @@ public class MainActivity extends Activity {
         root.addView(res);
         String tree = p.getString("backupTree", null);
         long lastAuto = p.getLong("lastAutoBackup", 0);
-        root.addView(toggle("Respaldo automático semanal", "autoBackup", false));
-        root.addView(text(tree == null ? "Carpeta: sin elegir" : "Carpeta: " + Uri.decode(Uri.parse(tree).getLastPathSegment())
-                + (lastAuto > 0 ? " · último: " + Usage.dayClock(lastAuto) : ""), 13, th.dim));
-        Button folder = button("Elegir carpeta para los respaldos");
+        root.addView(toggle(L.t("Respaldo automático semanal"), "autoBackup", false));
+        root.addView(text(tree == null ? L.t("Carpeta: sin elegir") : L.t("Carpeta: ") + Uri.decode(Uri.parse(tree).getLastPathSegment())
+                + (lastAuto > 0 ? L.t(" · último: ") + Usage.dayClock(lastAuto) : ""), 13, th.dim));
+        Button folder = button(L.t("Elegir carpeta para los respaldos"));
         folder.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) { startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE), REQ_TREE); }
         });
         root.addView(folder);
-        Button now = button("Respaldar ahora en esa carpeta");
+        Button now = button(L.t("Respaldar ahora en esa carpeta"));
         now.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 boolean ok = Backup.auto(MainActivity.this);
-                Toast.makeText(MainActivity.this, ok ? "Respaldo guardado" : "Elegí una carpeta primero", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, ok ? L.t("Respaldo guardado") : L.t("Elegí una carpeta primero"), Toast.LENGTH_SHORT).show();
                 if (ok) showSettings();
             }
         });
         root.addView(now);
 
         // Otros
-        section(root, "Otros");
-        root.addView(text("• Pantalla de bloqueo: si tu versión de One UI permite widgets ahí, mantené apretado el reloj del bloqueo → Widgets → Claude Uso.\n"
-                + "• Atajos: mantené apretado el ícono de la app para Actualizar, Ver 7 días, Abrir Claude o Claude Code.\n"
-                + "• Asistente de Google: decí \"Ok Google, abrí Claude Uso\".\n"
-                + "• Botón en Ajustes rápidos: bajá la cortina, tocá el lápiz (editar) y arrastrá \"Claude\".\n"
-                + "• Pantalla de bloqueo: la notificación se ve completa. En el Always On Display aparece el número.\n"
-                + "• Galaxy Watch: los avisos (75/90/100%, reinicio) llegan al reloj si tiene activadas las notificaciones de esta app.",
+        section(root, L.t("Otros"));
+        root.addView(text(L.t("• Pantalla de bloqueo: si tu versión de One UI permite widgets ahí, mantené apretado el reloj del bloqueo → Widgets → Claude Uso.\n")
+                + L.t("• Atajos: mantené apretado el ícono de la app para Actualizar, Ver 7 días, Abrir Claude o Claude Code.\n")
+                + L.t("• Asistente de Google: decí \"Ok Google, abrí Claude Uso\".\n")
+                + L.t("• Botón en Ajustes rápidos: bajá la cortina, tocá el lápiz (editar) y arrastrá \"Claude\".\n")
+                + L.t("• Pantalla de bloqueo: la notificación se ve completa. En el Always On Display aparece el número.\n")
+                + L.t("• Galaxy Watch: los avisos (75/90/100%, reinicio) llegan al reloj si tiene activadas las notificaciones de esta app."),
                 14, th.dim));
         PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
         if (!pm.isIgnoringBatteryOptimizations(getPackageName())) {
-            Button bat = button("Permitir que funcione en segundo plano");
+            Button bat = button(L.t("Permitir que funcione en segundo plano"));
             bat.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     startActivity(new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
@@ -767,7 +767,7 @@ public class MainActivity extends Activity {
             });
             root.addView(bat, margins(0, 12, 0, 0));
         }
-        Button stop = button("Apagar widget y notificación");
+        Button stop = button(L.t("Apagar widget y notificación"));
         stop.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 stopService(new Intent(MainActivity.this, UsageService.class));
@@ -775,7 +775,7 @@ public class MainActivity extends Activity {
             }
         });
         root.addView(stop, margins(0, 12, 0, 0));
-        Button back = button("Volver");
+        Button back = button(L.t("Volver"));
         back.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { showMain(); } });
         root.addView(back);
         final int restore = keepScroll;
@@ -819,9 +819,9 @@ public class MainActivity extends Activity {
             OutputStream out = getContentResolver().openOutputStream(data.getData());
             out.write(sb.toString().getBytes("UTF-8"));
             out.close();
-            Toast.makeText(this, "Exportado: " + pts.size() + " registros", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, L.t("Exportado: ") + pts.size() + L.t(" registros"), Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
-            Toast.makeText(this, "No se pudo exportar: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, L.t("No se pudo exportar: ") + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 

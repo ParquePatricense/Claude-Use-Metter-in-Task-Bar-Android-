@@ -22,7 +22,7 @@ class Prefs {
         JSONArray arr = new JSONArray();
         String cookie = p.getString("cookie", null);
         if (cookie != null) {
-            JSONObject a = newAccount(cookie, p.getString("ua", null), "Cuenta 1");
+            JSONObject a = newAccount(cookie, p.getString("ua", null), L.t("Cuenta 1"));
             arr.put(a);
             File old = new File(c.getFilesDir(), "history.csv");
             if (old.exists()) old.renameTo(new File(c.getFilesDir(), "history_" + a.optString("id") + ".csv"));
@@ -85,7 +85,7 @@ class Prefs {
 
     static void addAccount(Context c, String cookie, String ua) {
         JSONArray arr = accounts(c);
-        arr.put(newAccount(cookie, ua, "Cuenta " + (arr.length() + 1)));
+        arr.put(newAccount(cookie, ua, L.t("Cuenta ") + (arr.length() + 1)));
         get(c).edit().putString("accounts", arr.toString()).putInt("active", arr.length() - 1).apply();
     }
 

@@ -153,13 +153,13 @@ final class History {
     /** Predicción en una línea para la pantalla principal. */
     static String prediction(Context c, Usage u) {
         if (!u.hasData()) return "";
-        if (u.pct >= 100) return "Llegaste al límite. " + u.resetLine();
+        if (u.pct >= 100) return L.t("Llegaste al límite. ") + u.resetLine();
         double r = rate(c, u);
-        if (r < 0) return "Predicción: juntando datos de tu ritmo…";
-        if (r <= 0.5) return "A tu ritmo actual no vas a llegar al límite en esta sesión";
+        if (r < 0) return L.t("Predicción: juntando datos de tu ritmo…");
+        if (r <= 0.5) return L.t("A tu ritmo actual no vas a llegar al límite en esta sesión");
         long limitAt = System.currentTimeMillis() + (long) ((100 - u.pct) / r * 3_600_000);
-        if (u.reset > 0 && limitAt >= u.reset) return "A este ritmo (" + Math.round(r) + "%/h) no llegás al límite antes de las " + Usage.clock(u.reset);
-        return "A este ritmo (" + Math.round(r) + "%/h) llegás al límite a las " + Usage.clock(limitAt);
+        if (u.reset > 0 && limitAt >= u.reset) return L.t("A este ritmo (") + Math.round(r) + L.t("%/h) no llegás al límite antes de las ") + Usage.clock(u.reset);
+        return L.t("A este ritmo (") + Math.round(r) + L.t("%/h) llegás al límite a las ") + Usage.clock(limitAt);
     }
 
     /** Horario de sueño detectado: el bloque más largo de horas sin uso (2 semanas). {inicio, fin} o null. */

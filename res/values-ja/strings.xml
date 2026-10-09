@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Claude Uso</string>
+    <string name="sc_refresh">更新</string>
+    <string name="sc_chart">7日間を見る</string>
+    <string name="sc_claude">Claudeを開く</string>
+    <string name="sc_code">Claude Code</string>
+</resources>

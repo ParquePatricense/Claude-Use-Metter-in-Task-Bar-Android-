@@ -34,7 +34,7 @@ final class Usage {
             JSONObject o = j.optJSONObject(m[0]);
             if (o != null && !o.isNull("utilization")) {
                 if (ex.length() > 0) ex.append(" · ");
-                ex.append(m[1]).append(" semana ").append(clamp(o.optDouble("utilization", 0))).append("%");
+                ex.append(m[1]).append(L.t(" semana ")).append(clamp(o.optDouble("utilization", 0))).append("%");
             }
         }
         u.extra = ex.length() > 0 ? ex.toString() : null;
@@ -83,17 +83,17 @@ final class Usage {
 
     static String dayClock(long t) {
         return Instant.ofEpochMilli(t).atZone(ZoneId.systemDefault())
-                .format(DateTimeFormatter.ofPattern("EEE d HH:mm", new Locale("es")));
+                .format(DateTimeFormatter.ofPattern("EEE d HH:mm", Locale.getDefault()));
     }
 
     String resetLine() {
-        return reset > 0 ? "Reinicia " + clock(reset) + " (en " + left(reset) + ")" : "Sin sesión activa";
+        return reset > 0 ? L.t("Reinicia ") + clock(reset) + L.t(" (en ") + left(reset) + ")" : L.t("Sin sesión activa");
     }
 
-    String sessionLine() { return "Sesión " + pct + "% · " + resetLine(); }
+    String sessionLine() { return L.t("Sesión ") + pct + "% · " + resetLine(); }
 
     String weekLine() {
-        return "Semana " + week + "%" + (weekReset > 0 ? " · reinicia " + dayClock(weekReset) : "");
+        return L.t("Semana ") + week + "%" + (weekReset > 0 ? L.t(" · reinicia ") + dayClock(weekReset) : "");
     }
 
     /** Cuenta regresiva con segundos: 4h 57m 12s. */

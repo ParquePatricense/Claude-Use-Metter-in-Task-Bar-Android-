@@ -7,16 +7,16 @@ import android.graphics.Typeface;
 
 /** Paletas (Claude, Monocromo, Pastel, Neón, Game Boy) en claro/oscuro + tipografía. */
 final class Theme {
-    static final String[] PALETTES = {"Claude", "Monocromo", "Pastel", "Neón", "Game Boy",
-            "Estilo NES", "Estilo Nintendo DS", "Estilo PlayStation 1", "Estilo PlayStation 2", "Estilo PlayStation 3",
-            "Estilo PlayStation 4", "Estilo PlayStation 5", "Estilo Switch", "Estilo Switch 2", "Estilo GameCube",
-            "Estilo Game Boy Advance", "PC gamer (RGB)", "PC retro (DOS)", "Estilo Steam Deck", "Estilo ROG Ally",
-            "Estilo Legion Go", "Estilo MSI Claw", "Estilo PSP", "Estilo PS Vita"};
-    static final String[] PAL_CATS = {"Básicos", "Nintendo", "PlayStation", "PC y portátiles"};
+    static final String[] PALETTES = {"Claude", L.t("Monocromo"), L.t("Pastel"), L.t("Neón"), "Game Boy",
+            L.t("Estilo NES"), L.t("Estilo Nintendo DS"), L.t("Estilo PlayStation 1"), L.t("Estilo PlayStation 2"), L.t("Estilo PlayStation 3"),
+            L.t("Estilo PlayStation 4"), L.t("Estilo PlayStation 5"), L.t("Estilo Switch"), L.t("Estilo Switch 2"), L.t("Estilo GameCube"),
+            L.t("Estilo Game Boy Advance"), L.t("PC gamer (RGB)"), L.t("PC retro (DOS)"), L.t("Estilo Steam Deck"), L.t("Estilo ROG Ally"),
+            L.t("Estilo Legion Go"), L.t("Estilo MSI Claw"), L.t("Estilo PSP"), L.t("Estilo PS Vita")};
+    static final String[] PAL_CATS = {L.t("Básicos"), "Nintendo", "PlayStation", L.t("PC y portátiles")};
     static final int[][] PAL_GROUPS = {{0, 1, 2, 3}, {4, 15, 5, 6, 12, 13, 14}, {7, 8, 9, 10, 11, 22, 23}, {16, 17, 18, 19, 20, 21}};
 
     /** Tipografías: archivo en assets (null = del sistema) y si es pixelada. */
-    static final String[] FONTS = {"Normal", "Pixel", "Retro arcade", "Terminal", "Moderna", "Cuadrada", "Redonda", "Cómic", "Monoespaciada", "Arcade gruesa"};
+    static final String[] FONTS = {L.t("Normal"), "Pixel", L.t("Retro arcade"), L.t("Terminal"), L.t("Moderna"), L.t("Cuadrada"), L.t("Redonda"), L.t("Cómic"), L.t("Monoespaciada"), L.t("Arcade gruesa")};
     private static final String[] FONT_FILES = {null, "pixel.ttf", "retro.ttf", "terminal.ttf", null, "cuadrada.ttf", "redonda.ttf", "comic.ttf", null, "arcade.ttf"};
     private static final Typeface[] faces = new Typeface[FONTS.length];
     static volatile int fontIdx;

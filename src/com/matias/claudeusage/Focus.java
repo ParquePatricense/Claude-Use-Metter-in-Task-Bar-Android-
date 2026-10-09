@@ -27,7 +27,7 @@ final class Focus {
         NotificationManager nm = c.getSystemService(NotificationManager.class);
         String id = Prefs.get(c).getString("zenRule", null);
         if (id != null && nm.getAutomaticZenRule(id) != null) return id;
-        AutomaticZenRule rule = new AutomaticZenRule("Concentración Claude", null,
+        AutomaticZenRule rule = new AutomaticZenRule(L.t("Concentración Claude"), null,
                 new ComponentName(c, MainActivity.class), COND, null,
                 NotificationManager.INTERRUPTION_FILTER_PRIORITY, true);
         id = nm.addAutomaticZenRule(rule);
@@ -50,7 +50,7 @@ final class Focus {
         try {
             String id = Prefs.get(c).getString("zenRule", null);
             if (id != null && hasAccess(c)) c.getSystemService(NotificationManager.class)
-                    .setAutomaticZenRuleState(id, new Condition(COND, "Sesión reiniciada", Condition.STATE_FALSE));
+                    .setAutomaticZenRuleState(id, new Condition(COND, L.t("Sesión reiniciada"), Condition.STATE_FALSE));
         } catch (Exception ignored) {}
     }
 

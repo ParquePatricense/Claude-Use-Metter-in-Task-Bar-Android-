@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Claude Uso</string>
+    <string name="sc_refresh">刷新</string>
+    <string name="sc_chart">查看7天</string>
+    <string name="sc_claude">打开Claude</string>
+    <string name="sc_code">Claude Code</string>
+</resources>

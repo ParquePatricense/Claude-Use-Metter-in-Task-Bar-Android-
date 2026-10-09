@@ -13,8 +13,8 @@ import android.view.animation.DecelerateInterpolator;
 
 /** Medidor principal: arco, batería, corazones o mascota. Animado y con pulso al límite. */
 class GaugeView extends View {
-    static final String[] METERS = {"Arco", "Batería retro", "Corazones", "Mascota", "Barra de vida (RPG)",
-            "Barra de experiencia", "Bloques que caen", "Comecocos", "Anillos", "Monedas", "Velocímetro", "Combustible"};
+    static final String[] METERS = {L.t("Arco"), L.t("Batería retro"), L.t("Corazones"), L.t("Mascota"), L.t("Barra de vida (RPG)"),
+            L.t("Barra de experiencia"), L.t("Bloques que caen"), L.t("Comecocos"), L.t("Anillos"), L.t("Monedas"), L.t("Velocímetro"), L.t("Combustible")};
     /** Medidores que muestran lo que te queda (como vida) en vez de lo usado. */
     private static boolean showsLeft(int m) { return m == 1 || m == 2 || m == 4 || m == 7 || m == 8 || m == 9 || m == 11; }
 
@@ -100,7 +100,7 @@ class GaugeView extends View {
             p.setTypeface(Theme.font(false));
             p.setTextSize(15 * d);
             p.setColor(th.dim);
-            c.drawText("de tu sesión", cx, cy + (zen ? 54 : 44) * d, p);
+            c.drawText(L.t("de tu sesión"), cx, cy + (zen ? 54 : 44) * d, p);
         } else {
             float box = meter == 3 ? s * 0.7f : s * 0.9f, my = meter == 3 ? cy - s * 0.12f : cy;
             if (meter == 3) {
@@ -127,8 +127,8 @@ class GaugeView extends View {
         p.setTextSize(16 * d);
         p.setColor(th.fg);
         String left = u.reset > 0 ? (secs ? Usage.leftSec(u.reset) : Usage.left(u.reset)) : "";
-        String r = !u.hasData() ? "Esperando datos…"
-                : u.reset > 0 ? "Reinicia en " + left + " · " + Usage.clock(u.reset) : "Sin sesión activa";
+        String r = !u.hasData() ? L.t("Esperando datos…")
+                : u.reset > 0 ? L.t("Reinicia en ") + left + " · " + Usage.clock(u.reset) : L.t("Sin sesión activa");
         fit(p, r, w - 32 * d, 16 * d);
         c.drawText(r, cx, cy + s / 2 + (meter == 0 ? -4 : 14) * d, p);
 
@@ -137,13 +137,13 @@ class GaugeView extends View {
             p.setTextAlign(Paint.Align.LEFT);
             p.setTypeface(Theme.font(true));
             p.setTextSize(16 * d);
-            String wk = "Semana " + (u.week < 0 ? "–" : u.week + "%");
+            String wk = L.t("Semana ") + (u.week < 0 ? "–" : u.week + "%");
             fit(p, wk, (x1 - x0) * 0.55f, 16 * d);
             float wkW = p.measureText(wk);
             c.drawText(wk, x0, y, p);
             float by = y + 14 * d, bh = 10 * d, rad = Theme.pixel ? 0 : bh / 2;
             if (u.weekReset > 0) {
-                String rs = "reinicia " + Usage.dayClock(u.weekReset);
+                String rs = L.t("reinicia ") + Usage.dayClock(u.weekReset);
                 p.setTypeface(Theme.font(false));
                 p.setTextAlign(Paint.Align.RIGHT);
                 p.setColor(th.dim);

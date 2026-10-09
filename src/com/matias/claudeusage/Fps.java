@@ -10,7 +10,7 @@ final class Fps {
     static final int[] OPTIONS = {0, 24, 30, 48, 60, 90, 120, 144, 165};
 
     static String label(Context c, int fps) {
-        return fps == 0 ? "Automático (tu pantalla: hasta " + maxRefresh(c) + " Hz)" : fps + " FPS";
+        return fps == 0 ? L.t("Automático (tu pantalla: hasta ") + maxRefresh(c) + " Hz)" : fps + " FPS";
     }
 
     static String[] labels(Context c) {

@@ -83,7 +83,7 @@ public class UsageService extends Service {
     public void onCreate() {
         super.onCreate();
         Prefs.migrate(this);
-        NotificationChannel ch = new NotificationChannel(CHANNEL, "Uso de Claude", NotificationManager.IMPORTANCE_LOW);
+        NotificationChannel ch = new NotificationChannel(CHANNEL, L.t("Uso de Claude"), NotificationManager.IMPORTANCE_LOW);
         ch.setShowBadge(false);
         ch.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
         NotificationManager nm = getSystemService(NotificationManager.class);
@@ -105,7 +105,7 @@ public class UsageService extends Service {
 
     static final int K_COIN = 0, K_WARN = 1, K_OVER = 2, K_ACH = 3, K_PLAIN = 4;
     private static final String[] SFX_CH = {"s_coin", "s_warn", "s_over", "s_ach"};
-    private static final String[] SFX_NAME = {"Avisos 8-bit: reinicio", "Avisos 8-bit: 75% y 90%", "Avisos 8-bit: límite", "Avisos 8-bit: logros"};
+    private static final String[] SFX_NAME = {L.t("Avisos 8-bit: reinicio"), L.t("Avisos 8-bit: 75% y 90%"), L.t("Avisos 8-bit: límite"), L.t("Avisos 8-bit: logros")};
     private static final int[] SFX_RES = {R.raw.sfx_coin, R.raw.sfx_warn, R.raw.sfx_over, R.raw.sfx_ach};
 
     /** Canales de aviso: normal, 8-bit (uno por sonido) y silencioso (horario de sueño). */
@@ -113,12 +113,12 @@ public class UsageService extends Service {
         NotificationManager nm = c.getSystemService(NotificationManager.class);
         for (String suf : new String[]{"", "_nv"}) {
             boolean vib = suf.isEmpty();
-            NotificationChannel al = new NotificationChannel(CH_ALERT + suf, "Avisos de Claude" + (vib ? "" : " (vibración propia)"), NotificationManager.IMPORTANCE_HIGH);
+            NotificationChannel al = new NotificationChannel(CH_ALERT + suf, L.t("Avisos de Claude") + (vib ? "" : L.t(" (vibración propia)")), NotificationManager.IMPORTANCE_HIGH);
             al.enableVibration(vib);
             if (!vib) al.setVibrationPattern(new long[]{0});
             nm.createNotificationChannel(al);
             for (int i = 0; i < SFX_CH.length; i++) {
-                NotificationChannel s = new NotificationChannel(SFX_CH[i] + suf, SFX_NAME[i] + (vib ? "" : " (vibración propia)"), NotificationManager.IMPORTANCE_HIGH);
+                NotificationChannel s = new NotificationChannel(SFX_CH[i] + suf, SFX_NAME[i] + (vib ? "" : L.t(" (vibración propia)")), NotificationManager.IMPORTANCE_HIGH);
                 s.setSound(android.net.Uri.parse("android.resource://" + c.getPackageName() + "/" + SFX_RES[i]),
                         new android.media.AudioAttributes.Builder().setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION).build());
                 s.enableVibration(vib);
@@ -126,7 +126,7 @@ public class UsageService extends Service {
                 nm.createNotificationChannel(s);
             }
         }
-        NotificationChannel q = new NotificationChannel("alerts_quiet", "Avisos en horario de sueño", NotificationManager.IMPORTANCE_LOW);
+        NotificationChannel q = new NotificationChannel("alerts_quiet", L.t("Avisos en horario de sueño"), NotificationManager.IMPORTANCE_LOW);
         nm.createNotificationChannel(q);
     }
 
@@ -223,9 +223,9 @@ public class UsageService extends Service {
     private void fetch() {
         String cookie = Prefs.cookie(this);
         if (cookie == null) {
-            Prefs.get(this).edit().putString("error", "sin sesión").apply();
+            Prefs.get(this).edit().putString("error", L.t("sin sesión")).apply();
             getSystemService(NotificationManager.class).notify(NOTIF_ID,
-                    base(-1).setContentTitle("Claude").setContentText("Abrí la app para iniciar sesión").build());
+                    base(-1).setContentTitle("Claude").setContentText(L.t("Abrí la app para iniciar sesión")).build());
             return;
         }
         // Sesión guardada (cuenta cargada a mano o recién cambiada): la paso al almacén de cookies
@@ -273,7 +273,7 @@ public class UsageService extends Service {
         Usage u = Usage.load(this);
         if (s == null || s.startsWith("ERR:")) {
             failures++;
-            String err = s == null ? "sin respuesta" : s.substring(4);
+            String err = s == null ? L.t("sin respuesta") : s.substring(4);
             boolean auth = err.contains("HTTP 401") || err.contains("HTTP 403");
             u.error = err;
             u.save(this);
@@ -291,7 +291,7 @@ public class UsageService extends Service {
             }
             String org = o.optString("n", "");
             JSONObject acc = Prefs.active(this);
-            if (!org.isEmpty() && acc != null && acc.optString("name", "").startsWith("Cuenta ")) {
+            if (!org.isEmpty() && acc != null && acc.optString("name", "").startsWith(L.t("Cuenta "))) {
                 Prefs.setActiveField(this, "name", org.replace("'s Organization", ""));
             }
             if (n.pct != u.pct || n.week != u.week) p.edit().putLong("lastChange", n.updated).apply();
@@ -302,7 +302,7 @@ public class UsageService extends Service {
             progress(u, n);
             show(n);
         } catch (Exception e) {
-            u.error = "datos inválidos: " + e.getMessage();
+            u.error = L.t("datos inválidos: ") + e.getMessage();
             u.save(this);
             show(u);
         }
@@ -317,7 +317,7 @@ public class UsageService extends Service {
         if (win != oldWin) {
             // La ventana anterior terminó: aviso de reinicio
             if (oldWin > 0 && now >= oldWin * 600000 - 15 * MIN && old.pct > 0) {
-                alert(ID_RESET, "Sesión de Claude reiniciada", "Volviste a 0%. Semana " + n.week + "%", false, K_COIN);
+                alert(ID_RESET, L.t("Sesión de Claude reiniciada"), L.t("Volviste a 0%. Semana ") + n.week + "%", false, K_COIN);
                 vibrate(this, VIB_RESET);
                 Focus.off(this);
                 Focus.broadcast(this, "reset", n.pct);
@@ -329,19 +329,19 @@ public class UsageService extends Service {
         int hit = n.pct >= 100 ? 100 : n.pct >= 90 ? 90 : n.pct >= 75 ? 75 : 0;
         if (hit > lvl) {
             String txt = hit == 100
-                    ? "Llegaste al límite. " + n.resetLine()
-                    : "Te queda " + (100 - n.pct) + "% · " + n.resetLine();
-            alert(ID_LEVEL, "Claude al " + n.pct + "%", txt, false, hit == 100 ? K_OVER : K_WARN);
+                    ? L.t("Llegaste al límite. ") + n.resetLine()
+                    : L.t("Te queda ") + (100 - n.pct) + "% · " + n.resetLine();
+            alert(ID_LEVEL, L.t("Claude al ") + n.pct + "%", txt, false, hit == 100 ? K_OVER : K_WARN);
             vibrate(this, hit == 100 ? VIB_100 : hit == 90 ? VIB_90 : VIB_75);
             Focus.broadcast(this, hit == 100 ? "limit" : "level" + hit, n.pct);
-            if (hit >= p.getInt("focusAt", 100)) Focus.on(this, "Llegaste al " + n.pct + "% de tu sesión de Claude");
+            if (hit >= p.getInt("focusAt", 100)) Focus.on(this, L.t("Llegaste al ") + n.pct + L.t("% de tu sesión de Claude"));
             lvl = hit;
         }
         // Aviso 5 min antes del reinicio
         if (p.getBoolean("preReset", true) && n.reset > 0 && n.pct > 0
                 && n.reset - now <= 5 * MIN && n.reset > now && p.getLong("preWin", 0) != win) {
             long m = Math.max(1, (n.reset - now + 30 * SEC) / MIN);
-            alert(ID_PRE, "En " + m + " min se reinicia tu sesión", "A las " + Usage.clock(n.reset) + " volvés a 0%", false, K_COIN);
+            alert(ID_PRE, L.t("En ") + m + L.t(" min se reinicia tu sesión"), L.t("A las ") + Usage.clock(n.reset) + L.t(" volvés a 0%"), false, K_COIN);
             vibrate(this, VIB_PRE);
             p.edit().putLong("preWin", win).apply();
         }
@@ -388,8 +388,8 @@ public class UsageService extends Service {
         p.edit().putInt("sumWeek", week).apply();
         History.Stats st = History.stats(History.load(this, System.currentTimeMillis() - 8 * History.DAY), 8);
         if (st.avgPeak < 0) return;
-        alert(ID_SUMMARY, "Tu semana con Claude", "Pico promedio " + st.avgPeak + "% · " + st.sessions + " sesiones · "
-                + st.limits + " límites · racha " + st.streak + " días", false, K_ACH);
+        alert(ID_SUMMARY, L.t("Tu semana con Claude"), L.t("Pico promedio ") + st.avgPeak + "% · " + st.sessions + L.t(" sesiones · ")
+                + st.limits + L.t(" límites · racha ") + st.streak + L.t(" días"), false, K_ACH);
     }
 
     private void alert(int id, String title, String text, boolean relogin) { alert(id, title, text, relogin, K_PLAIN); }
@@ -405,15 +405,15 @@ public class UsageService extends Service {
                 .setAutoCancel(true)
                 .setContentIntent(pi);
         if (relogin) b.addAction(new Notification.Action.Builder(
-                Icon.createWithResource(this, R.drawable.ic_stat), "Iniciar sesión", pi).build());
+                Icon.createWithResource(this, R.drawable.ic_stat), L.t("Iniciar sesión"), pi).build());
         getSystemService(NotificationManager.class).notify(id, b.build());
     }
 
     private void expired() {
         PendingIntent login = openApp(true);
         Notification n = base(-1)
-                .setContentTitle("Claude: sesión vencida")
-                .setContentText("Tocá para volver a iniciar sesión")
+                .setContentTitle(L.t("Claude: sesión vencida"))
+                .setContentText(L.t("Tocá para volver a iniciar sesión"))
                 .setColor(Theme.widget(this).high)
                 .setContentIntent(login)
                 .build();
@@ -421,7 +421,7 @@ public class UsageService extends Service {
         SharedPreferences p = Prefs.get(this);
         if (!p.getBoolean("expired", false)) {
             p.edit().putBoolean("expired", true).apply();
-            alert(ID_EXPIRED, "Claude: sesión vencida", "Tocá para volver a iniciar sesión y seguir viendo tu uso", true);
+            alert(ID_EXPIRED, L.t("Claude: sesión vencida"), L.t("Tocá para volver a iniciar sesión y seguir viendo tu uso"), true);
         }
         updateOthers();
     }
@@ -468,11 +468,11 @@ public class UsageService extends Service {
         }
         // Accesos directos (Android muestra hasta 3 botones)
         int n = 0;
-        if (p.getBoolean("actRefresh", true) && n++ < 3) b.addAction(action("Actualizar",
+        if (p.getBoolean("actRefresh", true) && n++ < 3) b.addAction(action(L.t("Actualizar"),
                 PendingIntent.getService(this, 1, new Intent(this, UsageService.class).setAction(ACTION_REFRESH), PendingIntent.FLAG_IMMUTABLE)));
-        if (p.getBoolean("goClaude", true) && n++ < 3) b.addAction(action("Ir a Claude", web(4, "https://claude.ai/new")));
+        if (p.getBoolean("goClaude", true) && n++ < 3) b.addAction(action(L.t("Ir a Claude"), web(4, "https://claude.ai/new")));
         if (p.getBoolean("actCode", true) && n++ < 3) b.addAction(action("Claude Code", web(5, "https://claude.ai/code")));
-        if (p.getBoolean("actUsage", false) && n++ < 3) b.addAction(action("Ver uso en Claude", web(7, "https://claude.ai/settings/usage")));
+        if (p.getBoolean("actUsage", false) && n++ < 3) b.addAction(action(L.t("Ver uso en Claude"), web(7, "https://claude.ai/settings/usage")));
         return b;
     }
 
@@ -503,12 +503,12 @@ public class UsageService extends Service {
     private Notification build(Usage u) {
         if (!u.hasData()) {
             return base(-1).setContentTitle("Claude")
-                    .setContentText(u.error != null ? "Error: " + u.error + " (reintentando)" : "Conectando…").build();
+                    .setContentText(u.error != null ? L.t("Error: ") + u.error + L.t(" (reintentando)") : L.t("Conectando…")).build();
         }
         RemoteViews small = new RemoteViews(getPackageName(), R.layout.notif_small);
         small.setTextViewText(R.id.n_session, u.sessionLine());
         small.setImageViewBitmap(R.id.n_sbar, Art.bar(Theme.widget(this), u.pct, 600, 12));
-        small.setTextViewText(R.id.n_week, u.error != null ? "Sin conexión, reintentando…" : u.weekLine());
+        small.setTextViewText(R.id.n_week, u.error != null ? L.t("Sin conexión, reintentando…") : u.weekLine());
         RemoteViews big = new RemoteViews(getPackageName(), R.layout.notif_big);
         big.setTextViewText(R.id.n_session, u.sessionLine());
         big.setImageViewBitmap(R.id.n_sbar, Art.bar(Theme.widget(this), u.pct, 600, 14));
@@ -525,12 +525,12 @@ public class UsageService extends Service {
         if (u.extra != null) big.setTextViewText(R.id.n_extra, u.extra);
         else big.setViewVisibility(R.id.n_extra, View.GONE);
         Notification.Builder b = base(u.pct)
-                .setContentTitle("Sesión Claude: " + u.pct + "%")
+                .setContentTitle(L.t("Sesión Claude: ") + u.pct + "%")
                 .setContentText(u.resetLine())
                 .setStyle(new Notification.DecoratedCustomViewStyle())
                 .setCustomContentView(small)
                 .setCustomBigContentView(big);
-        if (u.error != null) b.setSubText("sin conexión");
+        if (u.error != null) b.setSubText(L.t("sin conexión"));
         return b.build();
     }
 

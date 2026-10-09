@@ -10,16 +10,16 @@ import java.util.Set;
 final class Achievements {
     static final String[][] ALL = {
             // id, nombre, descripción
-            {"first", "Primer dato", "La app leyó tu uso por primera vez", "Moño"},
-            {"streak3", "Racha de 3", "3 días seguidos sin llegar al límite", "Gorro"},
-            {"streak7", "Semana perfecta", "7 días seguidos sin llegar al límite", "Corona"},
-            {"sessions10", "10 sesiones", "Usaste 10 sesiones de Claude", "Anteojos"},
-            {"night", "Búho nocturno", "Usaste Claude entre las 0 y las 4", "Auriculares"},
-            {"early", "Madrugador", "Usaste Claude entre las 5 y las 7", ""},
-            {"limit", "Al límite", "Llegaste al 100% de una sesión", ""},
-            {"marathon", "Maratón", "5 sesiones en un mismo día", ""},
-            {"collector", "Coleccionista", "Probaste 5 mascotas distintas", ""},
-            {"zen", "Zen", "Activaste el modo zen", ""},
+            {"first", L.t("Primer dato"), L.t("La app leyó tu uso por primera vez"), "Moño"},
+            {"streak3", L.t("Racha de 3"), L.t("3 días seguidos sin llegar al límite"), "Gorro"},
+            {"streak7", L.t("Semana perfecta"), L.t("7 días seguidos sin llegar al límite"), "Corona"},
+            {"sessions10", L.t("10 sesiones"), L.t("Usaste 10 sesiones de Claude"), "Anteojos"},
+            {"night", L.t("Búho nocturno"), L.t("Usaste Claude entre las 0 y las 4"), "Auriculares"},
+            {"early", L.t("Madrugador"), L.t("Usaste Claude entre las 5 y las 7"), ""},
+            {"limit", L.t("Al límite"), L.t("Llegaste al 100% de una sesión"), ""},
+            {"marathon", L.t("Maratón"), L.t("5 sesiones en un mismo día"), ""},
+            {"collector", L.t("Coleccionista"), L.t("Probaste 5 mascotas distintas"), ""},
+            {"zen", L.t("Zen"), L.t("Activaste el modo zen"), ""},
     };
 
     static boolean has(Context c, String id) { return Prefs.get(c).getLong("ach_" + id, 0) > 0; }
@@ -36,7 +36,7 @@ final class Achievements {
         Prefs.get(c).edit().putLong("ach_" + id, System.currentTimeMillis()).apply();
         for (String[] a : ALL) {
             if (!a[0].equals(id)) continue;
-            UsageService.notifyAchievement(c, "🏆 Logro: " + a[1], a[2]);
+            UsageService.notifyAchievement(c, L.t("🏆 Logro: ") + a[1], a[2]);
         }
         return true;
     }

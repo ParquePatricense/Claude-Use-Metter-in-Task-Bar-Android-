@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Claude Usage</string>
+    <string name="sc_refresh">Refresh</string>
+    <string name="sc_chart">See 7 days</string>
+    <string name="sc_claude">Open Claude</string>
+    <string name="sc_code">Claude Code</string>
+</resources>

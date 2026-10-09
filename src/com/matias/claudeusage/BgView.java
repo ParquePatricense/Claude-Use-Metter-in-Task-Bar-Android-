@@ -11,8 +11,8 @@ import java.util.Random;
 
 /** Fondos animados pixel. Respetan los FPS elegidos. */
 class BgView extends View {
-    static final String[] KINDS = {"Ninguno", "Estrellas", "Lluvia", "Nieve", "Gato arcoíris", "Código que cae",
-            "Hiperespacio", "Burbujas", "Luciérnagas", "Fuegos artificiales", "Corazones", "Hojas de otoño"};
+    static final String[] KINDS = {L.t("Ninguno"), L.t("Estrellas"), L.t("Lluvia"), L.t("Nieve"), L.t("Gato arcoíris"), L.t("Código que cae"),
+            L.t("Hiperespacio"), L.t("Burbujas"), L.t("Luciérnagas"), L.t("Fuegos artificiales"), L.t("Corazones"), L.t("Hojas de otoño")};
     private static final int N = 70;
     private static final int[] RAINBOW = {0xFFFF3B30, 0xFFFF9500, 0xFFFFCC00, 0xFF34C759, 0xFF007AFF, 0xFFAF52DE};
     private static final String GLYPHS = "01アイウエオカキクケコサシスセソタチツテト0123456789";

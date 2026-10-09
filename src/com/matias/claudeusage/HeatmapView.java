@@ -35,7 +35,7 @@ class HeatmapView extends View {
         p.setTypeface(Theme.font(false));
         p.setColor(th.fg);
         p.setTextSize(13 * d);
-        c.drawText("Cuándo usás Claude · 4 semanas", l, 16 * d, p);
+        c.drawText(L.t("Cuándo usás Claude · 4 semanas"), l, 16 * d, p);
         p.setTextSize(10 * d);
         for (int dIdx = 0; dIdx < 7; dIdx++) {
             p.setColor(th.dim);
@@ -52,7 +52,7 @@ class HeatmapView extends View {
         for (int h = 0; h < 24; h += 6) c.drawText(h + "h", l + h * cell, t + 7 * cell + 14 * d, p);
         if (max <= 0) {
             p.setTextAlign(Paint.Align.CENTER);
-            c.drawText("Se completa a medida que usás Claude", getWidth() / 2f, t + 3.6f * cell, p);
+            c.drawText(L.t("Se completa a medida que usás Claude"), getWidth() / 2f, t + 3.6f * cell, p);
             p.setTextAlign(Paint.Align.LEFT);
         }
     }

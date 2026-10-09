@@ -28,9 +28,9 @@ final class Backup {
             OutputStream out = c.getContentResolver().openOutputStream(uri);
             out.write(json(c).getBytes("UTF-8"));
             out.close();
-            Toast.makeText(c, "Copia guardada", Toast.LENGTH_SHORT).show();
+            Toast.makeText(c, L.t("Copia guardada"), Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
-            Toast.makeText(c, "No se pudo guardar: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(c, L.t("No se pudo guardar: ") + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -112,7 +112,7 @@ final class Backup {
     static boolean read(Context c, Uri uri) {
         try {
             JSONObject root = new JSONObject(readAll(c.getContentResolver().openInputStream(uri)));
-            if (!"claude-uso".equals(root.optString("app"))) throw new IllegalArgumentException("no es una copia de esta app");
+            if (!"claude-uso".equals(root.optString("app"))) throw new IllegalArgumentException(L.t("no es una copia de esta app"));
             SharedPreferences.Editor ed = Prefs.get(c).edit();
             JSONObject prefs = root.getJSONObject("prefs");
             for (Iterator<String> it = prefs.keys(); it.hasNext(); ) {
@@ -151,11 +151,11 @@ final class Backup {
                 out.close();
                 n += lines.size();
             }
-            Toast.makeText(c, "Copia restaurada (" + n + " registros)", Toast.LENGTH_SHORT).show();
+            Toast.makeText(c, L.t("Copia restaurada (") + n + L.t(" registros)"), Toast.LENGTH_SHORT).show();
             WidgetProvider.update(c);
             return true;
         } catch (Exception e) {
-            Toast.makeText(c, "No se pudo restaurar: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(c, L.t("No se pudo restaurar: ") + e.getMessage(), Toast.LENGTH_LONG).show();
             return false;
         }
     }

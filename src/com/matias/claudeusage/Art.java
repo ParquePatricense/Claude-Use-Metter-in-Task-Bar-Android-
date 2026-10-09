@@ -9,7 +9,7 @@ import android.graphics.Typeface;
 
 /** Todo lo que se dibuja como imagen: barras, anillo, estilos del widget, mascota pixel art. */
 final class Art {
-    static final String[] STYLES = {"Anillo", "Barra", "Solo número", "Batería retro", "Corazones", "Punto", "Mascota"};
+    static final String[] STYLES = {L.t("Anillo"), L.t("Barra"), L.t("Solo número"), L.t("Batería retro"), L.t("Corazones"), L.t("Punto"), L.t("Mascota")};
     static final int RING = 0, BAR = 1, NUMBER = 2, BATTERY = 3, HEARTS = 4, DOT = 5, MASCOT = 6;
 
     // ---------- Barras ----------
@@ -93,7 +93,7 @@ final class Art {
             center(c, p, txt, size / 2f, size * 0.46f);
             p.setColor(t.dim);
             p.setTextSize(size * 0.15f);
-            if (pct >= 0) c.drawText("% sesión", size / 2f, size * 0.92f, p);
+            if (pct >= 0) c.drawText(L.t("% sesión"), size / 2f, size * 0.92f, p);
         } else {
             p.setColor(t.fg);
             p.setTextSize(size * (txt.length() >= 3 ? 0.30f : 0.38f));

@@ -11,10 +11,10 @@ for k in ORDER:
     nose="new int[]{%d,%d}"%m["nose"] if m.get("nose") else "null"
     (lx,ly),(rx,ry)=m["eyes"]; sx,sy=m["sweat"]
     flags=("n" if m.get("noface") else "")+("s" if m.get("sockets") else "")
-    out.append('            {"%s", %d, %s, "%s", new int[]{%d,%d,%d,%d}, %s, new int[]{%d,%d}, "%s", %s, "%s"},'%(
+    out.append('            {L.t("%s"), %d, %s, "%s", new int[]{%d,%d,%d,%d}, %s, new int[]{%d,%d}, "%s", %s, "%s"},'%(
         m["name"],ANIMS.index(m["anim"]),frames,cols,lx,ly,rx,ry,mouth,sx,sy,m.get("eye","o"),nose,flags))
 out+=['    };']
-out.append('    static final String[] CAT_NAMES = {'+",".join('"%s"'%n for n,_ in CATS)+'};')
+out.append('    static final String[] CAT_NAMES = {'+",".join('L.t("%s")'%n for n,_ in CATS)+'};')
 out.append('    static final int[][] CATS = {'+",".join('{'+",".join(str(ORDER.index(k)) for k in ks)+'}' for _,ks in CATS)+'};')
 out.append('    static final String[] KEYS = {'+",".join('"%s"'%k for k in ORDER)+'};')
 out+=['}']

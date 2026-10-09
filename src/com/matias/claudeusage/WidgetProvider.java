@@ -141,13 +141,13 @@ public class WidgetProvider extends AppWidgetProvider {
         }
         v.setInt(R.id.w_flip, "setFlipInterval", interval);
         boolean ok = u.hasData();
-        v.setTextViewText(R.id.w_title, ok ? "Sesión " + u.pct + "%" : "Claude");
-        v.setTextViewText(R.id.w_session, ok ? "Sesión " + u.pct + "%" : "Claude");
-        v.setTextViewText(R.id.w_reset, ok ? u.resetLine() : "Sin datos todavía");
-        v.setTextViewText(R.id.w_left, !ok ? "–" : u.reset > 0 ? "↻ " + Usage.left(u.reset) : "Libre");
-        v.setTextViewText(R.id.w_week, ok ? u.weekLine() : "Abrí la app");
-        v.setTextViewText(R.id.w_wshort, ok ? "Semana " + u.week + "%" : "");
-        v.setTextViewText(R.id.w_upd, u.updated > 0 ? "Actualizado " + Usage.clock(u.updated) : "");
+        v.setTextViewText(R.id.w_title, ok ? L.t("Sesión ") + u.pct + "%" : "Claude");
+        v.setTextViewText(R.id.w_session, ok ? L.t("Sesión ") + u.pct + "%" : "Claude");
+        v.setTextViewText(R.id.w_reset, ok ? u.resetLine() : L.t("Sin datos todavía"));
+        v.setTextViewText(R.id.w_left, !ok ? "–" : u.reset > 0 ? "↻ " + Usage.left(u.reset) : L.t("Libre"));
+        v.setTextViewText(R.id.w_week, ok ? u.weekLine() : L.t("Abrí la app"));
+        v.setTextViewText(R.id.w_wshort, ok ? L.t("Semana ") + u.week + "%" : "");
+        v.setTextViewText(R.id.w_upd, u.updated > 0 ? L.t("Actualizado ") + Usage.clock(u.updated) : "");
         for (int id : TEXTS) v.setTextColor(id, t.fg);
         for (int id : DIMS) v.setTextColor(id, t.dim);
         if (layout == R.layout.widget_2x2 || layout == R.layout.widget_3x2

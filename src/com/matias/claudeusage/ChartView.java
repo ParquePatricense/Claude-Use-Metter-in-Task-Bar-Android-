@@ -89,12 +89,12 @@ class ChartView extends View {
         p.setTextSize(13 * d);
         p.setTextAlign(Paint.Align.LEFT);
         p.setColor(th.fg);
-        c.drawText(week ? "Últimos 7 días" : "Últimas 24 h", l, 14 * d, p);
+        c.drawText(week ? L.t("Últimos 7 días") : L.t("Últimas 24 h"), l, 14 * d, p);
         p.setTextAlign(Paint.Align.RIGHT);
         p.setColor(th.accent);
-        c.drawText("● Sesión", r - 80 * d, 14 * d, p);
+        c.drawText(L.t("● Sesión"), r - 80 * d, 14 * d, p);
         p.setColor(th.dim);
-        c.drawText("● Semana", r, 14 * d, p);
+        c.drawText(L.t("● Semana"), r, 14 * d, p);
 
         p.setTextSize(11 * d);
         for (int v = 0; v <= 100; v += 50) {
@@ -106,7 +106,7 @@ class ChartView extends View {
             c.drawText(v + "%", l - 6 * d, y + 4 * d, p);
         }
         p.setTextAlign(Paint.Align.CENTER);
-        DateTimeFormatter dayFmt = DateTimeFormatter.ofPattern("EEE d", new Locale("es"));
+        DateTimeFormatter dayFmt = DateTimeFormatter.ofPattern("EEE d", Locale.getDefault());
         int steps = week ? 7 : 4;
         for (int i = steps; i >= 0; i--) {
             long ts = now - span * i / steps;
@@ -119,7 +119,7 @@ class ChartView extends View {
         if (pts == null || pts.isEmpty()) {
             p.setColor(th.dim);
             p.setTextSize(13 * d);
-            c.drawText("Se va llenando solo a medida que usás Claude", (l + r) / 2, (t + b) / 2, p);
+            c.drawText(L.t("Se va llenando solo a medida que usás Claude"), (l + r) / 2, (t + b) / 2, p);
             return;
         }
         long gap = week ? 60 * 60 * 1000 : 20 * 60 * 1000;
@@ -142,8 +142,8 @@ class ChartView extends View {
             p.setColor(th.accent);
             c.drawCircle(x, y, 5 * d, p);
             String when = Instant.ofEpochMilli(best.ts).atZone(ZoneId.systemDefault())
-                    .format(DateTimeFormatter.ofPattern(week ? "EEE d HH:mm" : "HH:mm", new Locale("es")));
-            String txt = when + " · Sesión " + best.pct + "% · Semana " + best.week + "%";
+                    .format(DateTimeFormatter.ofPattern(week ? "EEE d HH:mm" : "HH:mm", Locale.getDefault()));
+            String txt = when + L.t(" · Sesión ") + best.pct + L.t("% · Semana ") + best.week + "%";
             p.setTextSize(12 * d);
             float tw = p.measureText(txt) + 16 * d;
             float bx = Math.max(l, Math.min(r - tw, x - tw / 2));
