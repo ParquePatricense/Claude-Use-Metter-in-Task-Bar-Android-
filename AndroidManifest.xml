@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.matias.claudeusage" android:versionCode="10" android:versionName="6.2">
+    package="com.matias.claudeusage" android:versionCode="11" android:versionName="7.0">
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="34"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
@@ -112,6 +112,174 @@
         </activity-alias>
         <activity-alias android:name=".Icon11" android:targetActivity=".MainActivity" android:exported="true"
             android:icon="@mipmap/ic_m11" android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+        </activity-alias>
+        <activity-alias android:name=".Icon12" android:targetActivity=".MainActivity" android:exported="true"
+            android:icon="@mipmap/ic_m12" android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+        </activity-alias>
+        <activity-alias android:name=".Icon13" android:targetActivity=".MainActivity" android:exported="true"
+            android:icon="@mipmap/ic_m13" android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+        </activity-alias>
+        <activity-alias android:name=".Icon14" android:targetActivity=".MainActivity" android:exported="true"
+            android:icon="@mipmap/ic_m14" android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+        </activity-alias>
+        <activity-alias android:name=".Icon15" android:targetActivity=".MainActivity" android:exported="true"
+            android:icon="@mipmap/ic_m15" android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+        </activity-alias>
+        <activity-alias android:name=".Icon16" android:targetActivity=".MainActivity" android:exported="true"
+            android:icon="@mipmap/ic_m16" android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+        </activity-alias>
+        <activity-alias android:name=".Icon17" android:targetActivity=".MainActivity" android:exported="true"
+            android:icon="@mipmap/ic_m17" android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+        </activity-alias>
+        <activity-alias android:name=".Icon18" android:targetActivity=".MainActivity" android:exported="true"
+            android:icon="@mipmap/ic_m18" android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+        </activity-alias>
+        <activity-alias android:name=".Icon19" android:targetActivity=".MainActivity" android:exported="true"
+            android:icon="@mipmap/ic_m19" android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+        </activity-alias>
+        <activity-alias android:name=".Icon20" android:targetActivity=".MainActivity" android:exported="true"
+            android:icon="@mipmap/ic_m20" android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+        </activity-alias>
+        <activity-alias android:name=".Icon21" android:targetActivity=".MainActivity" android:exported="true"
+            android:icon="@mipmap/ic_m21" android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+        </activity-alias>
+        <activity-alias android:name=".Icon22" android:targetActivity=".MainActivity" android:exported="true"
+            android:icon="@mipmap/ic_m22" android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+        </activity-alias>
+        <activity-alias android:name=".Icon23" android:targetActivity=".MainActivity" android:exported="true"
+            android:icon="@mipmap/ic_m23" android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+        </activity-alias>
+        <activity-alias android:name=".Icon24" android:targetActivity=".MainActivity" android:exported="true"
+            android:icon="@mipmap/ic_m24" android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+        </activity-alias>
+        <activity-alias android:name=".Icon25" android:targetActivity=".MainActivity" android:exported="true"
+            android:icon="@mipmap/ic_m25" android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+        </activity-alias>
+        <activity-alias android:name=".Icon26" android:targetActivity=".MainActivity" android:exported="true"
+            android:icon="@mipmap/ic_m26" android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+        </activity-alias>
+        <activity-alias android:name=".Icon27" android:targetActivity=".MainActivity" android:exported="true"
+            android:icon="@mipmap/ic_m27" android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+        </activity-alias>
+        <activity-alias android:name=".Icon28" android:targetActivity=".MainActivity" android:exported="true"
+            android:icon="@mipmap/ic_m28" android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+        </activity-alias>
+        <activity-alias android:name=".Icon29" android:targetActivity=".MainActivity" android:exported="true"
+            android:icon="@mipmap/ic_m29" android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+        </activity-alias>
+        <activity-alias android:name=".Icon30" android:targetActivity=".MainActivity" android:exported="true"
+            android:icon="@mipmap/ic_m30" android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+        </activity-alias>
+        <activity-alias android:name=".Icon31" android:targetActivity=".MainActivity" android:exported="true"
+            android:icon="@mipmap/ic_m31" android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+        </activity-alias>
+        <activity-alias android:name=".Icon32" android:targetActivity=".MainActivity" android:exported="true"
+            android:icon="@mipmap/ic_m32" android:enabled="false">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

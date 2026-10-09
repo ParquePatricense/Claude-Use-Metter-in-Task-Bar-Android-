@@ -7,7 +7,9 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -179,6 +181,33 @@ final class Mascots {
             float lum = (0.299f * Color.red(c) + 0.587f * Color.green(c) + 0.114f * Color.blue(c)) / 255f;
             out.setPixel(x, y, tones[Math.min(3, (int) (lum * 4))]);
         }
+        return out;
+    }
+
+    private static final Map<String, List<Bitmap>> loopCache = new HashMap<String, List<Bitmap>>();
+
+    /** Cuadros de la mascota animada en bucle de 2,4 s (para la notificación). */
+    static synchronized List<Bitmap> loopFrames(Context ctx, Theme t, int pct, int size, int fps, long loop) {
+        String key = current(ctx) + "/" + stage(ctx) + "/" + Art.mood(pct) + "/" + t.pal + "/" + size + "/" + fps
+                + "/" + Prefs.get(ctx).getInt("accessory", 0) + "/" + loop;
+        List<Bitmap> hit = loopCache.get(key);
+        if (hit != null) return hit;
+        if (loopCache.size() > 4) loopCache.clear();
+        List<Bitmap> out = new ArrayList<Bitmap>();
+        long prev = loopMs;
+        loopMs = loop;
+        int n = fps <= 0 ? 1 : (int) (loopMs * fps / 1000);
+        Paint pix = new Paint();
+        pix.setFilterBitmap(false);
+        float pad = size * 0.12f;
+        for (int i = 0; i < n; i++) {
+            Bitmap b = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+            draw(ctx, new Canvas(b), new RectF(pad, pad * 1.4f, size - pad, size - pad * 0.6f), t, pct,
+                    (long) (i * loopMs / (double) n), fps > 0, pix, -1);
+            out.add(b);
+        }
+        loopMs = prev;
+        loopCache.put(key, out);
         return out;
     }
 

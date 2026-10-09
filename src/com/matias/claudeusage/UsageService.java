@@ -144,7 +144,11 @@ public class UsageService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Notification n = build(Usage.load(this));
+        Notification n;
+        try { n = build(Usage.load(this)); } catch (RuntimeException e) {
+            Prefs.get(this).edit().putInt("nFps", 0).putInt("nFpsIdx", 2).apply();
+            n = build(Usage.load(this));
+        }
         if (Build.VERSION.SDK_INT >= 34) {
             startForeground(NOTIF_ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
         } else {
@@ -408,7 +412,13 @@ public class UsageService extends Service {
     }
 
     private void show(Usage u) {
-        getSystemService(NotificationManager.class).notify(NOTIF_ID, build(u));
+        try {
+            getSystemService(NotificationManager.class).notify(NOTIF_ID, build(u));
+        } catch (RuntimeException e) {
+            // Si el sistema rechaza el tamaño, apaga la animación de la notificación y reintenta
+            Prefs.get(this).edit().putInt("nFps", 0).putInt("nFpsIdx", 2).apply();
+            getSystemService(NotificationManager.class).notify(NOTIF_ID, build(u));
+        }
         updateOthers();
     }
 
@@ -422,7 +432,7 @@ public class UsageService extends Service {
         PendingIntent refresh = PendingIntent.getService(this, 1,
                 new Intent(this, UsageService.class).setAction(ACTION_REFRESH), PendingIntent.FLAG_IMMUTABLE);
         Notification.Builder b = new Notification.Builder(this, CHANNEL)
-                .setSmallIcon(numberIcon(pct))
+                .setSmallIcon(numberIcon(this, pct))
                 .setColor(pct < 0 ? t.accent : t.level(pct))
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
@@ -456,6 +466,34 @@ public class UsageService extends Service {
         big.setImageViewBitmap(R.id.n_sbar, Art.bar(Theme.widget(this), u.pct, 600, 14));
         big.setTextViewText(R.id.n_week, u.weekLine());
         big.setImageViewBitmap(R.id.n_wbar, Art.bar(Theme.widget(this), u.week, 600, 14));
+        // Color de la paleta, ajustado al fondo del panel (claro u oscuro)
+        Theme t = Theme.widget(this);
+        boolean night = (getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK)
+                == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+        int strong = Art.readable(t.accent, night);
+        small.setTextColor(R.id.n_session, strong);
+        big.setTextColor(R.id.n_session, strong);
+        // Mascota animada (cuadros que el panel pasa a los FPS elegidos)
+        // Límite de Android: la notificación entera debe pesar menos de ~1 MB.
+        // 60 FPS = 72 cuadros de 32 px (bucle de 1,2 s); 30 FPS = 36 cuadros de 48 px. Solo en la vista expandida.
+        int nfps = Prefs.get(this).getInt("nFps", 60);
+        if (Prefs.get(this).getBoolean("nMascot", true)) {
+            small.removeAllViews(R.id.n_flip);
+            RemoteViews still = new RemoteViews(getPackageName(), R.layout.notif_frame);
+            still.setImageViewBitmap(R.id.n_frame, Mascots.loopFrames(this, t, u.pct, 48, 0, 1200).get(0));
+            small.addView(R.id.n_flip, still);
+            java.util.List<Bitmap> fr = Mascots.loopFrames(this, t, u.pct, nfps >= 60 ? 32 : 48, nfps, 1200);
+            big.removeAllViews(R.id.n_flip);
+            for (Bitmap bmp : fr) {
+                RemoteViews one = new RemoteViews(getPackageName(), R.layout.notif_frame);
+                one.setImageViewBitmap(R.id.n_frame, bmp);
+                big.addView(R.id.n_flip, one);
+            }
+            big.setInt(R.id.n_flip, "setFlipInterval", nfps > 0 ? Math.max(16, 1000 / nfps) : 3_600_000);
+        } else {
+            small.setViewVisibility(R.id.n_flip, View.GONE);
+            big.setViewVisibility(R.id.n_flip, View.GONE);
+        }
         if (u.extra != null) big.setTextViewText(R.id.n_extra, u.extra);
         else big.setViewVisibility(R.id.n_extra, View.GONE);
         Notification.Builder b = base(u.pct)
@@ -468,5 +506,5 @@ public class UsageService extends Service {
         return b.build();
     }
 
-    static Icon numberIcon(int pct) { return Icon.createWithBitmap(Art.numberIcon(pct)); }
+    static Icon numberIcon(Context c, int pct) { return Icon.createWithBitmap(Art.statusIcon(c, pct)); }
 }

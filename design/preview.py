@@ -30,9 +30,9 @@ def render(key,mood,frame,blink=False):
     if m.get("sockets") and kind=="open":
         pts=[(-1,0),(0,0),(1,0),(-1,1),(0,1),(1,1)]
     else: pts=EYES[kind]
-    for ex,ey in m["eyes"]:
+    for ex,ey in ([] if m.get("noface") else m["eyes"]):
         for dx,dy in pts: im.putpixel((ex+dx,ey+dy),ec+(255,))
-    if m.get("mouth"):
+    if m.get("mouth") and not m.get("noface"):
         mx,my=m["mouth"]
         for dx,dy in MOUTH[mood]: im.putpixel((mx+dx,my+dy),c["o"]+(255,))
     if m.get("nose"): im.putpixel(m["nose"],c["p"]+(255,)); 
@@ -46,8 +46,9 @@ def render(key,mood,frame,blink=False):
             if 0<=sx+dx<16 and 0<=sy+dy<16: im.putpixel((sx+dx,sy+dy),(0x7E,0xC8,0xF2,255))
     return im
 cell=20; moods=[0,1,2,3,4,5]
-sheet=Image.new("RGB",(cell*(len(moods)+2),cell*len(ORDER)),(31,30,29))
-for i,k in enumerate(ORDER):
+SHOW=ORDER[12:] if len(sys.argv)>1 else ORDER
+sheet=Image.new("RGB",(cell*(len(moods)+2),cell*len(SHOW)),(31,30,29))
+for i,k in enumerate(SHOW):
     for j,md in enumerate(moods):
         sheet.paste(render(k,md,0),(j*cell+2,i*cell+2),render(k,md,0))
     sheet.paste(render(k,1,1),(6*cell+2,i*cell+2),render(k,1,1))

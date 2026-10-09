@@ -77,3 +77,67 @@ ORDER=["blob","slime","ghost","cat","robot","invader","dragon","ninja","mush","c
 for k in ORDER:
     for f in M[k]["frames"]:
         assert len(f)==16 and all(len(r)==16 for r in f), (k,[len(r) for r in f])
+
+# ======== Tanda 2: animales, humanos, armas y minerales ========
+def full(rows):
+    for r in rows: assert len(r)==16, (r,len(r))
+    return rows
+# --- Animales ---
+dog=mirror(["........","........","....oooo","..oobbbb",".oddobbb","oddddobb","oddddbbb","oddddbbb",".oddbbbb","..obbbbb","..obbwww","..obwwww","...owwww","....oooo","........","........"])
+dog=setpx(dog,[(7,10),(8,10)],"k")
+M["dog"]=dict(name="Perro", colors=dict(b="#C8915A", d="#7A4E2D", w="#F4E6D0"), eyes=((5,7),(9,7)), mouth=(6,11), sweat=(14,2), frames=[dog], anim="bob")
+blackcat=[r for r in cat]; blackcatB=[r for r in catB]
+M["blackcat"]=dict(name="Gato negro", colors=dict(b="#34343F", o="#15151B"), eyes=((4,6),(10,6)), mouth=(6,9), sweat=(14,4), frames=[blackcat,blackcatB], anim="cat", nose=(7,8), eye="y")
+par=mirror(["........",".....ooo","....obbb","...obhbb","..obbbbb","..obbbbb",".obbbbbb",".obbbbbb",".obbbbbb",".obbbbyy",".obbbbyy",".obbbbbb","..orrbbb","..orrrbb","...ooooo","........"])
+par=setpx(par,[(8,3),(9,4)],"b"); par=setpx(par,[(7,11),(8,11)],"k")
+parB=setpx(par,[(1,8),(1,9),(1,10),(14,8),(14,9),(14,10)],"r")
+M["parrot"]=dict(name="Loro", colors=dict(b="#3BB273", y="#F5B700", r="#E84855"), eyes=((4,6),(10,6)), mouth=None, sweat=(14,1), frames=[par,parB], anim="hover")
+ham=mirror(["........","........","..oo....",".oppoooo",".obbbbbb","obbbbbbb","obbbbbbb","obbbbbbb","obbbbwww","obbbwwww","obbwwwww",".obwwwww","..owwwww","...ooooo","........","........"])
+M["hamster"]=dict(name="Hámster", colors=dict(b="#E8A15C", w="#FFF3E0"), eyes=((4,6),(10,6)), mouth=(6,10), sweat=(14,2), frames=[ham], anim="squash", nose=(7,9))
+fish=full(["................","................","....oooooo......","...obbwbbbo...o.","..obhbwbbbbo.obo",".obbbbwbbbbbobbo",".obbbbwbbbbbbbbo",".obbbbwbbbbbbbbo",".obbbbwbbbbbbbbo",".obbbbwbbbbbobbo","..obbbwbbbbo.obo","...obbwbbbo...o.","....oooooo......","................","................","................"])
+fishB=full(["................","................","....oooooo......","...obbwbbbo.....","..obhbwbbbbo..oo",".obbbbwbbbbbooob",".obbbbwbbbbbbbbo",".obbbbwbbbbbbbbo",".obbbbwbbbbbbbbo",".obbbbwbbbbbooob","..obbbwbbbbo..oo","...obbwbbbo.....","....oooooo......","................","................","................"])
+M["fish"]=dict(name="Pez", colors=dict(b="#FF8C42"), eyes=((3,6),(8,6)), mouth=(3,9), sweat=(13,1), frames=[fish,fishB], anim="float", eye="k")
+# --- Humanos (cabeza chibi + hombros) ---
+face=mirror(["........","........","........","........","...ooooo","..obbbbb",".obbbbbb",".obbbbbb",".obbbbbb",".obbbbbb","..obbbbb","...oobbb",".....ooo","..ovvvvv",".ovvvvvv",".ovvvvvv"])
+def hum(rows_over):
+    r=list(face)
+    for i,row in rows_over.items(): r[i]=row
+    return full(r)
+skin="#F2C9A0"
+def H(key,name,over,cols,anim="bob",mouth=(6,10)):
+    M[key]=dict(name=name, colors=dict(b=skin, **cols), eyes=((5,7),(9,7)), mouth=mouth, sweat=(14,5), frames=[hum(over)], anim=anim, eye="k")
+hard={1:"......oooo......",2:"....oaaaaaao....",3:"...oaaaaaaaao...",4:"..oaaaaaaaaaao..",5:"oooooooooooooooo"}
+H("builder","Constructor",hard,dict(a="#F5C542",v="#E07A1F"))
+eng=dict(hard); eng[14]=".ovvvvwwwwvvvvo."; eng[15]=".ovvvvwwwwvvvvo."
+H("engineer","Ingeniero",eng,dict(a="#F2F2F2",v="#F28C28",w="#DADADA"))
+H("architect","Arquitecto",{1:"........a.......",2:"....aaaaaaaa....",3:"..aaaaaaaaaaaa..",4:".aaaaaaaaaaaaaa.",14:".ovvvvvvvvvvvvo.",15:".ovvvvvvvvvvvvo."},dict(a="#22222A",v="#3A3A48"))
+H("swimmer","Nadador",{3:"...oaaaaaaaao...",4:"..oaaaaaaaaaao..",5:".oaaaaaaaaaaaao.",6:".okllkkkkkkllko.",13:"..obbbbbbbbbbo..",14:".obbbbbbbbbbbbo.",15:".obbbbbbbbbbbbo."},dict(a="#2F80ED",l="#7FE7F2",k="#1E1E24"))
+H("fisher","Pescador",{2:"....oaaaaaao....",3:"...oaaaaaaaao...",4:"..oaaaaaaaaaao..",5:"oaaaaaaaaaaaaaao",14:".ovvvvvvvvvvvvo.",15:".ovvvvvvvvvvvvo."},dict(a="#5B8C4A",v="#2D5D7B"))
+H("smith","Herrero",{3:"...oaaaaaaaao...",4:"..oaaaaaaaaaao..",5:".oaaaaaaaaaaaao.",11:"...okkbbbbkko...",12:"....okkkkkko....",13:"..ovvvvvvvvvvo..",14:".ovvvvvvvvvvvvo.",15:".ovvvvvvvvvvvvo."},dict(a="#C0392B",k="#4A2E1F",v="#7A5230"))
+H("cowboy","Vaquero",{1:".....oaaaao.....",2:"....oaaaaaao....",3:"....oaaaaaao....",4:"oaaaaaaaaaaaaaao",5:".oooooooooooooo.",14:".ovvvvvvvvvvvvo.",15:".ovvvvvvvvvvvvo."},dict(a="#8B5A2B",v="#B03A2E"))
+# --- Armas medievales (objetos, sin cara) ---
+sw=mirror([".......o","......ow","......ow","......ow","......ow","......ow","......ow","......ow","......ow","...ooooo","...oyyyy","...ooooo","......ok","......ok",".....oyy","......oo"])
+sw=setpx(sw,[(8,y) for y in range(1,9)],"g")
+M["sword"]=dict(name="Espada", colors=dict(b="#9AA7B3", w="#E8EEF2", g="#9AA7B3", y="#F5C542", k="#6B4226", o="#2B2B33"), eyes=((5,4),(9,4)), mouth=None, sweat=(13,1), frames=[sw], anim="waddle", noface=True)
+axe=full(["................",".........oo.....","...ooooookko....","..ohwwwwwkko....",".ohwwwwwwkko....",".ohwwwwwwkko....",".ohwwwwwwkko....","..ohwwwwwkko....","...ooooookko....","........okko....","........okko....","........okko....","........okko....","........okko....","........okko....","........oooo...."])
+M["axe"]=dict(name="Hacha", colors=dict(b="#9AA7B3", w="#B9C4CE", h="#EEF3F7", k="#7A4A24", o="#2B2B33"), eyes=((3,4),(6,4)), mouth=None, sweat=(13,1), frames=[axe], anim="waddle", noface=True)
+bow=full(["................",".....kw.........","....k.w.........","...k..w.........","...k..w.........","..k...w.........","..k...w......g..","..kryyyyyyyyyggg","..k...w......g..","..k...w.........","...k..w.........","...k..w.........","....k.w.........",".....kw.........","................","................"])
+bowB=full(["................",".....k..........","....k.w.........","...k...w........","...k....w.......","..k......w......","..k......w...g..","..kr.....wyyyggg","..k......w...g..","..k......w......","...k....w.......","...k...w........","....k.w.........",".....k..........","................","................"])
+M["bow"]=dict(name="Arco y flecha", colors=dict(b="#8B5A2B", k="#8B5A2B", w="#EDEDED", y="#D9B07A", g="#9AA7B3", r="#E84855"), eyes=((3,4),(6,4)), mouth=None, sweat=(13,1), frames=[bow,bowB], anim="bob", noface=True)
+# --- Minerales (bloque de piedra con vetas y carita) ---
+def ore(key,name,c1,c2):
+    rows=[list(".oooooooooooooo.")]+[list(".obbbbbbbbbbbbo.") for _ in range(13)]+[list(".oooooooooooooo."),list("................")]
+    for x,y in [(4,3),(5,4),(11,3),(12,4),(3,11),(4,12),(11,12),(12,11),(7,13),(8,2)]: rows[y][x]="x"
+    for x,y in [(3,3),(12,3),(3,12),(12,12)]: rows[y][x]="X"
+    for x,y in [(2,6),(13,8),(6,12),(10,2),(2,9)]: rows[y][x]="d"
+    M[key]=dict(name=name, colors=dict(b="#8E8E8E", d="#6E6E6E", o="#3A3A3A", x=c1, X=c2), eyes=((5,6),(9,6)), mouth=(6,9), sweat=(13,0), frames=[["".join(r) for r in rows]], anim="bob", eye="k")
+ore("gold","Mineral de oro","#F5C542","#FFF1A8")
+ore("copper","Mineral de cobre","#D9773B","#5FC7A8")
+ore("iron","Mineral de hierro","#D8B7A0","#F1E1D4")
+ore("bronze","Mineral de bronce","#B07D3A","#D9A75F")
+ore("diamond","Mineral de diamante","#4FE3E1","#C9FFFE")
+ore("titanium","Mineral de titanio","#B8C4D6","#EEF3FA")
+ORDER+=["dog","blackcat","parrot","hamster","fish","builder","engineer","architect","swimmer","fisher","smith","cowboy","sword","axe","bow","gold","copper","iron","bronze","diamond","titanium"]
+for k in ORDER:
+    for f in M[k]["frames"]:
+        assert len(f)==16 and all(len(r)==16 for r in f), (k,[len(r) for r in f])

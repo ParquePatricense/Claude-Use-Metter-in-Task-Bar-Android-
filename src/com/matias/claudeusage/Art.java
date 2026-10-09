@@ -357,6 +357,74 @@ final class Art {
         return bmp;
     }
 
+    /** Ícono de la barra de estado. Android lo pinta de un solo color: se distingue por la forma. */
+    static Bitmap statusIcon(android.content.Context ctx, int pct) {
+        int style = Prefs.get(ctx).getInt("statusIcon", 1);
+        int s = 96;
+        String txt = pct < 0 ? "-" : String.valueOf(pct);
+        if (style == 0) return numberIcon(pct);
+        Bitmap b = Bitmap.createBitmap(s, s, Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(b);
+        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+        p.setColor(Color.WHITE);
+        if (style == 1) {
+            // Recuadro relleno con el número calado: no se confunde con la hora
+            c.drawRoundRect(new RectF(4, 8, s - 4, s - 8), 22, 22, p);
+            p.setXfermode(new android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.CLEAR));
+            if (Theme.pixel) {
+                Bitmap g = Bitmap.createBitmap(s, s, Bitmap.Config.ARGB_8888);
+                int cell = txt.length() >= 3 ? 6 : 9;
+                digits(g, txt, s / 2, (s - 5 * cell) / 2, cell, Color.WHITE);
+                c.drawBitmap(g, 0, 0, p);
+            } else {
+                p.setTypeface(Theme.font(true));
+                p.setTextAlign(Paint.Align.CENTER);
+                p.setTextSize(txt.length() >= 3 ? 40 : 58);
+                center(c, p, txt, s / 2f, s / 2f);
+            }
+            return b;
+        }
+        if (style == 2) {
+            // Anillo de progreso con el número adentro
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(11);
+            p.setStrokeCap(Paint.Cap.ROUND);
+            RectF r = new RectF(7, 7, s - 7, s - 7);
+            p.setAlpha(90);
+            c.drawArc(r, 0, 360, false, p);
+            p.setAlpha(255);
+            if (pct > 0) c.drawArc(r, -90, 360f * pct / 100, false, p);
+            p.setStyle(Paint.Style.FILL);
+            p.setTypeface(Theme.font(true));
+            p.setTextAlign(Paint.Align.CENTER);
+            p.setTextSize(txt.length() >= 3 ? 30 : 42);
+            center(c, p, txt, s / 2f, s / 2f);
+            return b;
+        }
+        // Silueta de la mascota (los ojos y el contorno quedan calados)
+        Bitmap spr = Mascots.sprite(Theme.widget(ctx), Mascots.current(ctx), pct, false, 0);
+        for (int y = 0; y < 16; y++) for (int x = 0; x < 16; x++) {
+            int px = spr.getPixel(x, y);
+            if (Color.alpha(px) == 0) continue;
+            float lum = (0.299f * Color.red(px) + 0.587f * Color.green(px) + 0.114f * Color.blue(px)) / 255f;
+            if (lum < 0.22f) continue;
+            c.drawRect(x * 6, y * 6, x * 6 + 6, y * 6 + 6, p);
+        }
+        return b;
+    }
+
+    /** Ajusta un color para que se lea sobre fondo oscuro (true) o claro (false), sin llegar a blanco o negro puros. */
+    static int readable(int color, boolean darkBg) {
+        int c = color;
+        for (int i = 0; i < 6; i++) {
+            float lum = (0.299f * Color.red(c) + 0.587f * Color.green(c) + 0.114f * Color.blue(c)) / 255f;
+            if (darkBg && lum < 0.5f) c = mix(c, Color.WHITE, 0.2f);
+            else if (!darkBg && lum > 0.42f) c = mix(c, Color.parseColor("#0B2A4A"), 0.25f);
+            else break;
+        }
+        return c;
+    }
+
     // ---------- Color ----------
 
     static int fade(int c, int alpha) { return (c & 0x00FFFFFF) | (alpha << 24); }

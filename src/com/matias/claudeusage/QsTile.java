@@ -17,7 +17,7 @@ public class QsTile extends TileService {
         if (Build.VERSION.SDK_INT >= 29) {
             t.setSubtitle(!u.hasData() ? "Sin datos" : u.reset > 0 ? "⟳ " + Usage.left(u.reset) : "Libre");
         }
-        t.setIcon(UsageService.numberIcon(u.pct));
+        t.setIcon(UsageService.numberIcon(this, u.pct));
         t.setState(u.hasData() ? Tile.STATE_ACTIVE : Tile.STATE_INACTIVE);
         t.updateTile();
     }
