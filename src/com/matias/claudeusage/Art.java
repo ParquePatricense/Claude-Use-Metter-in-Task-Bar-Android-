@@ -362,54 +362,62 @@ final class Art {
         int style = Prefs.get(ctx).getInt("statusIcon", 1);
         int s = 96;
         String txt = pct < 0 ? "-" : String.valueOf(pct);
-        if (style == 0) return numberIcon(pct);
         Bitmap b = Bitmap.createBitmap(s, s, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(b);
         Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
         p.setColor(Color.WHITE);
-        if (style == 1) {
-            // Recuadro relleno con el número calado: no se confunde con la hora
-            c.drawRoundRect(new RectF(4, 8, s - 4, s - 8), 22, 22, p);
-            p.setXfermode(new android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.CLEAR));
-            if (Theme.pixel) {
-                Bitmap g = Bitmap.createBitmap(s, s, Bitmap.Config.ARGB_8888);
-                int cell = txt.length() >= 3 ? 6 : 9;
-                digits(g, txt, s / 2, (s - 5 * cell) / 2, cell, Color.WHITE);
-                c.drawBitmap(g, 0, 0, p);
-            } else {
-                p.setTypeface(Theme.font(true));
-                p.setTextAlign(Paint.Align.CENTER);
-                p.setTextSize(txt.length() >= 3 ? 40 : 58);
-                center(c, p, txt, s / 2f, s / 2f);
+        if (style == 3) {
+            // Silueta de la mascota (decorativa, sin número)
+            Bitmap spr = Mascots.sprite(Theme.widget(ctx), Mascots.current(ctx), pct, false, 0);
+            for (int y = 0; y < 16; y++) for (int x = 0; x < 16; x++) {
+                int px = spr.getPixel(x, y);
+                if (Color.alpha(px) == 0) continue;
+                float lum = (0.299f * Color.red(px) + 0.587f * Color.green(px) + 0.114f * Color.blue(px)) / 255f;
+                if (lum < 0.22f) continue;
+                c.drawRect(x * 6, y * 6, x * 6 + 6, y * 6 + 6, p);
             }
             return b;
         }
-        if (style == 2) {
-            // Anillo de progreso con el número adentro
+        // Área disponible para el número según la forma
+        float box;
+        if (style == 1) {
+            // Marco: borde redondeado grueso con el número adentro
             p.setStyle(Paint.Style.STROKE);
-            p.setStrokeWidth(11);
+            p.setStrokeWidth(8);
+            c.drawRoundRect(new RectF(4, 4, s - 4, s - 4), 20, 20, p);
+            p.setStyle(Paint.Style.FILL);
+            box = 76;
+        } else if (style == 2) {
+            // Anillo fino de progreso con el número grande adentro
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(7);
             p.setStrokeCap(Paint.Cap.ROUND);
-            RectF r = new RectF(7, 7, s - 7, s - 7);
-            p.setAlpha(90);
+            RectF r = new RectF(4, 4, s - 4, s - 4);
+            p.setAlpha(85);
             c.drawArc(r, 0, 360, false, p);
             p.setAlpha(255);
             if (pct > 0) c.drawArc(r, -90, 360f * pct / 100, false, p);
             p.setStyle(Paint.Style.FILL);
-            p.setTypeface(Theme.font(true));
-            p.setTextAlign(Paint.Align.CENTER);
-            p.setTextSize(txt.length() >= 3 ? 30 : 42);
-            center(c, p, txt, s / 2f, s / 2f);
+            box = 70;
+        } else {
+            box = 94;
+        }
+        if (Theme.pixel) {
+            int cols = txt.length() * 4 - 1;
+            int cell = Math.max(2, (int) Math.min(box / cols, box * 0.72f / 5));
+            digits(b, txt, s / 2, (s - 5 * cell) / 2, cell, Color.WHITE);
             return b;
         }
-        // Silueta de la mascota (los ojos y el contorno quedan calados)
-        Bitmap spr = Mascots.sprite(Theme.widget(ctx), Mascots.current(ctx), pct, false, 0);
-        for (int y = 0; y < 16; y++) for (int x = 0; x < 16; x++) {
-            int px = spr.getPixel(x, y);
-            if (Color.alpha(px) == 0) continue;
-            float lum = (0.299f * Color.red(px) + 0.587f * Color.green(px) + 0.114f * Color.blue(px)) / 255f;
-            if (lum < 0.22f) continue;
-            c.drawRect(x * 6, y * 6, x * 6 + 6, y * 6 + 6, p);
-        }
+        // Número condensado que llena el espacio
+        p.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
+        p.setTextAlign(Paint.Align.CENTER);
+        p.setTextSize(box);
+        float w = p.measureText(txt);
+        if (w > box) p.setTextSize(box * box / w);
+        Paint.FontMetrics fm = p.getFontMetrics();
+        float capH = -(fm.ascent) * 0.72f;
+        if (capH > box * 0.78f) p.setTextSize(p.getTextSize() * box * 0.78f / capH);
+        center(c, p, txt, s / 2f, s / 2f + 1);
         return b;
     }
 

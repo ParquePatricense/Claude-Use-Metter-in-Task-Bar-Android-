@@ -591,10 +591,7 @@ public class MainActivity extends Activity {
         // Barra de estado y notificación
         section(root, "Barra de estado y notificación");
         root.addView(text("Android pinta los íconos de la barra de estado del mismo color que la hora. Para que el número no se confunda, elegí una forma distinta:", 13, th.dim));
-        root.addView(choiceList(new String[]{"Número solo", "Número en recuadro relleno", "Número dentro de un anillo", "Silueta de la mascota"}, "statusIcon", 7100, false));
-        root.addView(toggle("Mascota animada en la notificación", "nMascot", true));
-        root.addView(text("Fluidez de la mascota en la notificación", 15, th.fg), margins(0, 8, 0, 0));
-        root.addView(choiceList(new String[]{"60 FPS", "30 FPS", "Quieta"}, "nFpsIdx", 7200, false));
+        root.addView(choiceList(new String[]{"Número grande", "Número con marco", "Número dentro de un anillo", "Silueta de la mascota (sin número)"}, "statusIcon", 7100, false));
 
         // Animaciones
         section(root, "Animaciones");
@@ -905,7 +902,6 @@ public class MainActivity extends Activity {
                     return;
                 }
                 Prefs.get(MainActivity.this).edit().putInt(key, id - base).apply();
-                if ("nFpsIdx".equals(key)) Prefs.get(MainActivity.this).edit().putInt("nFps", new int[]{60, 30, 0}[id - base]).apply();
                 if ("mascotId".equals(key)) { Achievements.sawMascot(MainActivity.this, id - base); applyIcon(); }
                 WidgetProvider.update(MainActivity.this);
                 startForegroundService(new Intent(MainActivity.this, UsageService.class));
@@ -940,15 +936,12 @@ public class MainActivity extends Activity {
                 if ("mascot".equals(key) || "sounds".equals(key) || "smartDnd".equals(key) || "autoBackup".equals(key)) return;
                 if ("crt".equals(key) || "evolve".equals(key)) { showSettings(); return; }
                 if ("mascotIcon".equals(key)) {
-                    // Sincroniza el ícono de la barra de estado con el de la app
-                    Prefs.get(MainActivity.this).edit().putInt("statusIcon", on ? 3 : 1).apply();
                     applyIcon();
                     WidgetProvider.update(MainActivity.this);
                     startForegroundService(new Intent(MainActivity.this, UsageService.class));
                     showSettings();
                     return;
                 }
-                if ("nMascot".equals(key)) { startForegroundService(new Intent(MainActivity.this, UsageService.class)); return; }
                 if ("randomDaily".equals(key)) { applyIcon(); WidgetProvider.update(MainActivity.this); return; }
                 if ("wMinimal".equals(key) || "wAnim".equals(key)) { WidgetProvider.update(MainActivity.this); return; }
                 if ("smart".equals(key)) {

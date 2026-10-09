@@ -474,26 +474,6 @@ public class UsageService extends Service {
         small.setTextColor(R.id.n_session, strong);
         big.setTextColor(R.id.n_session, strong);
         // Mascota animada (cuadros que el panel pasa a los FPS elegidos)
-        // Límite de Android: la notificación entera debe pesar menos de ~1 MB.
-        // 60 FPS = 72 cuadros de 32 px (bucle de 1,2 s); 30 FPS = 36 cuadros de 48 px. Solo en la vista expandida.
-        int nfps = Prefs.get(this).getInt("nFps", 60);
-        if (Prefs.get(this).getBoolean("nMascot", true)) {
-            small.removeAllViews(R.id.n_flip);
-            RemoteViews still = new RemoteViews(getPackageName(), R.layout.notif_frame);
-            still.setImageViewBitmap(R.id.n_frame, Mascots.loopFrames(this, t, u.pct, 48, 0, 1200).get(0));
-            small.addView(R.id.n_flip, still);
-            java.util.List<Bitmap> fr = Mascots.loopFrames(this, t, u.pct, nfps >= 60 ? 32 : 48, nfps, 1200);
-            big.removeAllViews(R.id.n_flip);
-            for (Bitmap bmp : fr) {
-                RemoteViews one = new RemoteViews(getPackageName(), R.layout.notif_frame);
-                one.setImageViewBitmap(R.id.n_frame, bmp);
-                big.addView(R.id.n_flip, one);
-            }
-            big.setInt(R.id.n_flip, "setFlipInterval", nfps > 0 ? Math.max(16, 1000 / nfps) : 3_600_000);
-        } else {
-            small.setViewVisibility(R.id.n_flip, View.GONE);
-            big.setViewVisibility(R.id.n_flip, View.GONE);
-        }
         if (u.extra != null) big.setTextViewText(R.id.n_extra, u.extra);
         else big.setViewVisibility(R.id.n_extra, View.GONE);
         Notification.Builder b = base(u.pct)
