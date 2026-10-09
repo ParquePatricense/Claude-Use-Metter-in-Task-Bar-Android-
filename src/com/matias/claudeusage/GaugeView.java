@@ -58,7 +58,7 @@ class GaugeView extends View {
     @Override
     protected void onMeasure(int ws, int hs) {
         int w = MeasureSpec.getSize(ws);
-        setMeasuredDimension(w, (int) (size(w) + (zen ? 60 : 110) * d));
+        setMeasuredDimension(w, (int) (size(w) + (zen ? 60 : 124) * d));
     }
 
     @Override
@@ -129,7 +129,7 @@ class GaugeView extends View {
         String left = u.reset > 0 ? (secs ? Usage.leftSec(u.reset) : Usage.left(u.reset)) : "";
         String r = !u.hasData() ? "Esperando datos…"
                 : u.reset > 0 ? "Reinicia en " + left + " · " + Usage.clock(u.reset) : "Sin sesión activa";
-        if (showsLeft(meter)) r = (u.hasData() ? "Te queda " + (100 - u.pct) + "% · " : "") + r;
+        fit(p, r, w - 32 * d, 16 * d);
         c.drawText(r, cx, cy + s / 2 + (meter == 0 ? -4 : 14) * d, p);
 
         if (!zen) {
@@ -137,15 +137,21 @@ class GaugeView extends View {
             p.setTextAlign(Paint.Align.LEFT);
             p.setTypeface(Theme.font(true));
             p.setTextSize(16 * d);
-            c.drawText("Semana " + (u.week < 0 ? "–" : u.week + "%"), x0, y, p);
+            String wk = "Semana " + (u.week < 0 ? "–" : u.week + "%");
+            fit(p, wk, (x1 - x0) * 0.55f, 16 * d);
+            float wkW = p.measureText(wk);
+            c.drawText(wk, x0, y, p);
+            float by = y + 14 * d, bh = 10 * d, rad = Theme.pixel ? 0 : bh / 2;
             if (u.weekReset > 0) {
+                String rs = "reinicia " + Usage.dayClock(u.weekReset);
                 p.setTypeface(Theme.font(false));
-                p.setTextSize(14 * d);
                 p.setTextAlign(Paint.Align.RIGHT);
                 p.setColor(th.dim);
-                c.drawText("reinicia " + Usage.dayClock(u.weekReset), x1, y, p);
+                fit(p, rs, x1 - x0, 14 * d);
+                // Si no entra al lado de "Semana", va debajo de la barra
+                if (x0 + wkW + 12 * d > x1 - p.measureText(rs)) c.drawText(rs, x1, by + bh + 18 * d, p);
+                else c.drawText(rs, x1, y, p);
             }
-            float by = y + 14 * d, bh = 10 * d, rad = Theme.pixel ? 0 : bh / 2;
             p.setColor(th.track);
             c.drawRoundRect(new RectF(x0, by, x1, by + bh), rad, rad, p);
             if (u.week > 0) {
@@ -154,6 +160,13 @@ class GaugeView extends View {
             }
         }
         if (pulseOn) Fps.next(this);
+    }
+
+    /** Achica la letra hasta que el texto entre en maxW (mínimo 60% del tamaño). */
+    private static void fit(Paint p, String text, float maxW, float size) {
+        p.setTextSize(size);
+        float tw = p.measureText(text);
+        if (tw > maxW) p.setTextSize(Math.max(size * 0.6f, size * maxW / tw));
     }
 
     /** Medidores extra inspirados en juegos. Pixel = s/40. */

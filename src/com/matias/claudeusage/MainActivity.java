@@ -480,14 +480,28 @@ public class MainActivity extends Activity {
 
     // ---------- Ajustes ----------
 
+    /** Posición de Ajustes a restaurar después de un cambio (sobrevive a recreate()). */
+    private static int keepScroll = -1;
+    /** Qué desplegables estaban abiertos (por clave). */
+    private static final java.util.Map<String, Boolean> openState = new java.util.HashMap<String, Boolean>();
+    private ScrollView settingsScroll;
+
+    @Override
+    public void recreate() {
+        if (screen == SCREEN_SETTINGS && settingsScroll != null) keepScroll = settingsScroll.getScrollY();
+        super.recreate();
+    }
+
     private void showSettings() {
+        if (screen == SCREEN_SETTINGS && settingsScroll != null) keepScroll = settingsScroll.getScrollY();
         screen = SCREEN_SETTINGS;
         handler.removeCallbacksAndMessages(null);
         final SharedPreferences p = Prefs.get(this);
         FrameLayout frame = new FrameLayout(this);
         frame.setBackgroundColor(th.bg);
         frame.addView(new BgView(this, p.getInt("bg", 0), th), matchParent());
-        ScrollView scroll = new ScrollView(this);
+        final ScrollView scroll = new ScrollView(this);
+        settingsScroll = scroll;
         frame.addView(scroll);
         if (p.getBoolean("crt", false)) frame.addView(new CrtView(this), matchParent());
         LinearLayout root = column();
@@ -567,9 +581,7 @@ public class MainActivity extends Activity {
 
         // Mascota
         section(root, "Mascota");
-        root.addView(text("Etapa: " + Mascots.STAGES[Mascots.stage(this)] + " · " + p.getInt("xpDays", 0)
-                + " días de uso (bebé a los 3, adulta a los 10, legendaria a los 30)", 14, th.dim));
-        root.addView(toggle("Evolución (huevo → bebé → adulta → legendaria)", "evolve", true));
+        root.addView(toggle("Estilo chibi (más chiquita, tipo bebé)", "chibi", false));
         root.addView(toggle("Una mascota distinta cada día", "randomDaily", false));
         groupedChoice(root, "Elegir mascota", MascotData.CAT_NAMES, MascotData.CATS, Mascots.names(), Mascots.current(this), new Pick() {
             public void picked(int i) {
@@ -595,7 +607,7 @@ public class MainActivity extends Activity {
         achT.setLineSpacing(0, 1.25f);
         root.addView(achT);
         if (pending > 0) {
-            LinearLayout hidden = collapsible(root, "Ver los que podés conseguir (" + pending + ")", false);
+            LinearLayout hidden = collapsible(root, "logros", "Ver los que podés conseguir (" + pending + ")", false);
             TextView t2 = text(todo.toString().trim(), 14, th.dim);
             t2.setLineSpacing(0, 1.25f);
             hidden.addView(t2);
@@ -605,6 +617,13 @@ public class MainActivity extends Activity {
         root.addView(text("Android pinta los íconos de la barra de estado del mismo color que la hora. Para que el número no se confunda, elegí una forma distinta:", 13, th.dim));
         if (p.getInt("statusIcon", 1) > 2) p.edit().putInt("statusIcon", 1).apply();
         root.addView(choiceList(new String[]{"Número grande", "Número con marco", "Número dentro de un anillo"}, "statusIcon", 7100, false));
+        root.addView(text("Imagen de la notificación", 15, th.fg), margins(0, 8, 0, 0));
+        root.addView(choiceList(new String[]{"Tu mascota", "El estilo del widget", "Solo el ícono de la app"}, "nIcon", 7300, false));
+        root.addView(text("Botones de la notificación (hasta 3)", 15, th.fg), margins(0, 8, 0, 0));
+        root.addView(toggle("Actualizar", "actRefresh", true));
+        root.addView(toggle("Ir a Claude", "goClaude", true));
+        root.addView(toggle("Claude Code", "actCode", true));
+        root.addView(toggle("Ver uso en Claude", "actUsage", false));
 
         // Animaciones
         section(root, "Animaciones");
@@ -627,7 +646,6 @@ public class MainActivity extends Activity {
                 + (qw != null ? String.format(java.util.Locale.US, "Detectado: %02d–%02d h", qw[0], qw[1])
                 : "Todavía aprendiendo tu horario (por ahora 01–08 h)"), "smartDnd", true));
         root.addView(toggle("Vibrar al actualizar desde el widget o Ajustes rápidos", "haptic", true));
-        root.addView(toggle("Botón \"Ir a Claude\" en la notificación", "goClaude", true));
 
         // Widget
         section(root, "Widget de inicio");
@@ -712,7 +730,8 @@ public class MainActivity extends Activity {
         // Otros
         section(root, "Otros");
         root.addView(text("• Pantalla de bloqueo: si tu versión de One UI permite widgets ahí, mantené apretado el reloj del bloqueo → Widgets → Claude Uso.\n"
-                + "• Atajos: mantené apretado el ícono de la app para Actualizar, Ver 7 días o Abrir Claude.\n"
+                + "• Atajos: mantené apretado el ícono de la app para Actualizar, Ver 7 días, Abrir Claude o Claude Code.\n"
+                + "• Asistente de Google: decí \"Ok Google, abrí Claude Uso\".\n"
                 + "• Botón en Ajustes rápidos: bajá la cortina, tocá el lápiz (editar) y arrastrá \"Claude\".\n"
                 + "• Pantalla de bloqueo: la notificación se ve completa. En el Always On Display aparece el número.\n"
                 + "• Galaxy Watch: los avisos (75/90/100%, reinicio) llegan al reloj si tiene activadas las notificaciones de esta app.",
@@ -739,7 +758,15 @@ public class MainActivity extends Activity {
         Button back = button("Volver");
         back.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { showMain(); } });
         root.addView(back);
-        setScreen(frame);
+        final int restore = keepScroll;
+        keepScroll = -1;
+        if (restore >= 0) {
+            // Mismo lugar que antes del cambio, sin animación de entrada
+            setContentView(frame);
+            scroll.post(new Runnable() { public void run() { scroll.scrollTo(0, restore); } });
+        } else {
+            setScreen(frame);
+        }
     }
 
     @Override
@@ -895,21 +922,39 @@ public class MainActivity extends Activity {
 
     /** Sección que se abre y se cierra tocando el título. Devuelve el contenedor de adentro. */
     private LinearLayout collapsible(LinearLayout parent, final String title, boolean open) {
-        final TextView head = text((open ? "▾ " : "▸ ") + title, 15, th.fg);
+        return collapsible(parent, title, title, open);
+    }
+
+    /**
+     * Sección desplegable: fila con el título y un botón redondo grande con chevrón que gira.
+     * key identifica la sección para recordar si estaba abierta al redibujar.
+     */
+    private LinearLayout collapsible(LinearLayout parent, final String key, String title, boolean open) {
+        Boolean saved = openState.get(key);
+        boolean isOpen = saved != null ? saved : open;
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setPadding(0, dp(10), 0, dp(6));
+        final TextView head = text(title, 15, th.fg);
         head.setTypeface(Theme.font(true));
-        head.setPadding(0, dp(12), 0, dp(8));
+        row.addView(head, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+        final ChevronView chev = new ChevronView(this, th, isOpen);
+        row.addView(chev, new LinearLayout.LayoutParams(dp(36), dp(36)));
         final LinearLayout body = new LinearLayout(this);
         body.setOrientation(LinearLayout.VERTICAL);
-        body.setPadding(dp(14), 0, 0, 0);
-        body.setVisibility(open ? View.VISIBLE : View.GONE);
-        head.setOnClickListener(new View.OnClickListener() {
+        body.setPadding(dp(14), 0, 0, dp(4));
+        body.setVisibility(isOpen ? View.VISIBLE : View.GONE);
+        body.setTag(head);
+        row.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 boolean show = body.getVisibility() != View.VISIBLE;
                 body.setVisibility(show ? View.VISIBLE : View.GONE);
-                head.setText((show ? "▾ " : "▸ ") + title);
+                chev.setOpen(show);
+                openState.put(key, show);
             }
         });
-        parent.addView(head);
+        parent.addView(row);
         parent.addView(body);
         return body;
     }
@@ -920,19 +965,21 @@ public class MainActivity extends Activity {
      */
     private void groupedChoice(LinearLayout parent, final String title, String[] catNames, int[][] groups,
                                final String[] names, int selected, final Pick pick) {
-        final LinearLayout outer = collapsible(parent, title + ": " + names[Math.max(0, Math.min(names.length - 1, selected))], false);
+        final LinearLayout outer = collapsible(parent, title, title + ": " + names[Math.max(0, Math.min(names.length - 1, selected))], false);
+        final TextView outerHead = (TextView) outer.getTag();
         final java.util.List<RadioButton> all = new java.util.ArrayList<RadioButton>();
         if (groups == null) { groups = new int[1][names.length]; for (int i = 0; i < names.length; i++) groups[0][i] = i; }
         for (int g = 0; g < groups.length; g++) {
             boolean has = false;
             for (int i : groups[g]) if (i == selected) has = true;
-            LinearLayout box = catNames == null ? outer : collapsible(outer, catNames[g] + " (" + groups[g].length + ")", has);
+            LinearLayout box = catNames == null ? outer : collapsible(outer, title + "/" + catNames[g], catNames[g] + " (" + groups[g].length + ")", has);
             for (final int i : groups[g]) {
                 final RadioButton rb = radio(names[i]);
                 rb.setChecked(i == selected);
                 rb.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View v) {
                         for (RadioButton o : all) o.setChecked(o == rb);
+                        outerHead.setText(title + ": " + names[i]);
                         pick.picked(i);
                     }
                 });
@@ -1007,7 +1054,8 @@ public class MainActivity extends Activity {
                 Prefs.get(MainActivity.this).edit().putBoolean(key, on).apply();
                 if ("zen".equals(key)) { if (on) Achievements.unlock(MainActivity.this, "zen"); return; }
                 if ("mascot".equals(key) || "sounds".equals(key) || "smartDnd".equals(key) || "autoBackup".equals(key)) return;
-                if ("crt".equals(key) || "evolve".equals(key)) { showSettings(); return; }
+                if ("crt".equals(key)) { showSettings(); return; }
+                if ("chibi".equals(key)) { refreshAll(); return; }
                 if ("mascotIcon".equals(key)) {
                     applyIcon();
                     WidgetProvider.update(MainActivity.this);
@@ -1017,6 +1065,10 @@ public class MainActivity extends Activity {
                 }
                 if ("randomDaily".equals(key)) { applyIcon(); WidgetProvider.update(MainActivity.this); return; }
                 if ("wMinimal".equals(key) || "wAnim".equals(key)) { WidgetProvider.update(MainActivity.this); return; }
+                if (key.startsWith("act") || "goClaude".equals(key)) {
+                    startForegroundService(new Intent(MainActivity.this, UsageService.class));
+                    return;
+                }
                 if ("smart".equals(key)) {
                     startForegroundService(new Intent(MainActivity.this, UsageService.class).setAction(UsageService.ACTION_REFRESH));
                 }

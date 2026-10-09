@@ -74,12 +74,10 @@ final class Mascots {
         return 0;
     }
 
-    /** Etapa de evolución: 0 huevo, 1 bebé, 2 adulta, 3 legendaria. Según días usando la app. */
+    /** Tamaño de la mascota: 1 chibi (chiquita), 2 normal. */
     static int stage(Context c) {
-        android.content.SharedPreferences p = Prefs.get(c);
-        if (!p.getBoolean("evolve", true)) return 2;
-        int xp = p.getInt("xpDays", 0);
-        return xp < 3 ? 0 : xp < 10 ? 1 : xp < 30 ? 2 : 3;
+        // Sin evolución: siempre adulta; "chibi" la muestra más chiquita, tipo bebé
+        return Prefs.get(c).getBoolean("chibi", false) ? 1 : 2;
     }
 
     static final String[] STAGES = {"Huevo", "Bebé", "Adulta", "Legendaria"};

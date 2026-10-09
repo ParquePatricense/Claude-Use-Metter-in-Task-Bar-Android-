@@ -14,4 +14,8 @@
         android:shortcutShortLabel="@string/sc_claude">
         <intent android:action="android.intent.action.VIEW" android:data="https://claude.ai/new"/>
     </shortcut>
+    <shortcut android:shortcutId="code" android:enabled="true" android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/sc_code">
+        <intent android:action="android.intent.action.VIEW" android:data="https://claude.ai/code"/>
+    </shortcut>
 </shortcuts>

@@ -4,4 +4,5 @@
     <string name="sc_refresh">Actualizar</string>
     <string name="sc_chart">Ver 7 días</string>
     <string name="sc_claude">Abrir Claude</string>
+    <string name="sc_code">Claude Code</string>
 </resources>

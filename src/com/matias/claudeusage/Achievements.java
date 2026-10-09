@@ -20,7 +20,6 @@ final class Achievements {
             {"marathon", "Maratón", "5 sesiones en un mismo día", ""},
             {"collector", "Coleccionista", "Probaste 5 mascotas distintas", ""},
             {"zen", "Zen", "Activaste el modo zen", ""},
-            {"legend", "Leyenda", "Tu mascota llegó a la etapa legendaria", ""},
     };
 
     static boolean has(Context c, String id) { return Prefs.get(c).getLong("ach_" + id, 0) > 0; }

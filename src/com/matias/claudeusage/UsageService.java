@@ -328,11 +328,7 @@ public class UsageService extends Service {
         long today = java.time.LocalDate.now().toEpochDay();
         boolean newDay = p.getLong("lastXpDay", -1) != today;
         if (newDay) {
-            int before = Mascots.stage(this);
             p.edit().putLong("lastXpDay", today).putInt("xpDays", p.getInt("xpDays", 0) + 1).apply();
-            int after = Mascots.stage(this);
-            if (after > before) notifyAchievement(this, "✨ ¡Tu mascota evolucionó!", "Ahora es " + Mascots.STAGES[after] + ".");
-            if (after == 3) Achievements.unlock(this, "legend");
         }
         // Respaldo automático semanal
         if (newDay && p.getBoolean("autoBackup", false)
@@ -429,8 +425,7 @@ public class UsageService extends Service {
 
     private Notification.Builder base(int pct) {
         Theme t = Theme.widget(this);
-        PendingIntent refresh = PendingIntent.getService(this, 1,
-                new Intent(this, UsageService.class).setAction(ACTION_REFRESH), PendingIntent.FLAG_IMMUTABLE);
+        SharedPreferences p = Prefs.get(this);
         Notification.Builder b = new Notification.Builder(this, CHANNEL)
                 .setSmallIcon(numberIcon(this, pct))
                 .setColor(pct < 0 ? t.accent : t.level(pct))
@@ -439,17 +434,44 @@ public class UsageService extends Service {
                 .setShowWhen(false)
                 .setVisibility(Notification.VISIBILITY_PUBLIC)
                 .setCategory(Notification.CATEGORY_STATUS)
-                .setContentIntent(openApp(false))
-                .addAction(new Notification.Action.Builder(
-                        Icon.createWithResource(this, R.drawable.ic_stat), "Actualizar", refresh).build());
-        if (Prefs.get(this).getBoolean("goClaude", true)) {
-            PendingIntent go = PendingIntent.getActivity(this, 4,
-                    new Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://claude.ai/new"))
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), PendingIntent.FLAG_IMMUTABLE);
-            b.addAction(new Notification.Action.Builder(
-                    Icon.createWithResource(this, R.drawable.ic_stat), "Ir a Claude", go).build());
+                .setContentIntent(openApp(false));
+        // Imagen grande de la notificación: la mascota o el estilo del widget (Samsung la muestra a la izquierda)
+        int icon = p.getInt("nIcon", 0);
+        if (icon < 2) {
+            try { b.setLargeIcon(Icon.createWithBitmap(notifImage(t, icon, pct))); } catch (Exception ignored) {}
         }
+        // Accesos directos (Android muestra hasta 3 botones)
+        int n = 0;
+        if (p.getBoolean("actRefresh", true) && n++ < 3) b.addAction(action("Actualizar",
+                PendingIntent.getService(this, 1, new Intent(this, UsageService.class).setAction(ACTION_REFRESH), PendingIntent.FLAG_IMMUTABLE)));
+        if (p.getBoolean("goClaude", true) && n++ < 3) b.addAction(action("Ir a Claude", web(4, "https://claude.ai/new")));
+        if (p.getBoolean("actCode", true) && n++ < 3) b.addAction(action("Claude Code", web(5, "https://claude.ai/code")));
+        if (p.getBoolean("actUsage", false) && n++ < 3) b.addAction(action("Ver uso en Claude", web(7, "https://claude.ai/settings/usage")));
         return b;
+    }
+
+    private Notification.Action action(String label, PendingIntent pi) {
+        return new Notification.Action.Builder(Icon.createWithResource(this, R.drawable.ic_stat), label, pi).build();
+    }
+
+    private PendingIntent web(int code, String url) {
+        return PendingIntent.getActivity(this, code, new Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url))
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), PendingIntent.FLAG_IMMUTABLE);
+    }
+
+    private Bitmap notifImage(Theme t, int kind, int pct) {
+        Usage u = Usage.load(this);
+        if (kind == 1) return Art.badge(this, t, Prefs.get(this).getInt("wStyle", 0), pct, u.week, 192, 0, Mascots.current(this));
+        Bitmap spr = Mascots.sprite(t, Mascots.current(this), pct, false, 0);
+        Bitmap out = Bitmap.createBitmap(160, 160, Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(out);
+        Paint bg = new Paint(Paint.ANTI_ALIAS_FLAG);
+        bg.setColor(t.bg);
+        c.drawCircle(80, 80, 80, bg);
+        Paint pix = new Paint();
+        pix.setFilterBitmap(false);
+        c.drawBitmap(spr, null, new android.graphics.RectF(16, 14, 144, 142), pix);
+        return out;
     }
 
     private Notification build(Usage u) {
