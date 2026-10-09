@@ -22,7 +22,7 @@
 
 ## 📲 Instalar
 
-1. ⬇️ Descargá `ClaudeUso.apk` desde **[Releases](../../releases)**.
+1. ⬇️ Descargá el `.apk` desde la **[última versión](../../releases/latest)**.
 2. 📂 Abrilo en el teléfono y permití instalar apps de origen desconocido.
 3. 🔑 Iniciá sesión en Claude dentro de la app. Listo: se configura sola.
 
