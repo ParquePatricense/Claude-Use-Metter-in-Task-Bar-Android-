@@ -9,7 +9,7 @@ import java.util.Set;
 /** Logros pixel art. Algunos desbloquean accesorios para la mascota. */
 final class Achievements {
     static final String[][] ALL = {
-            // id, nombre, descripción, accesorio que desbloquea
+            // id, nombre, descripción
             {"first", "Primer dato", "La app leyó tu uso por primera vez", "Moño"},
             {"streak3", "Racha de 3", "3 días seguidos sin llegar al límite", "Gorro"},
             {"streak7", "Semana perfecta", "7 días seguidos sin llegar al límite", "Corona"},
@@ -22,7 +22,6 @@ final class Achievements {
             {"zen", "Zen", "Activaste el modo zen", ""},
             {"legend", "Leyenda", "Tu mascota llegó a la etapa legendaria", ""},
     };
-    static final String[] ACCESSORIES = {"Ninguno", "Moño", "Gorro", "Anteojos", "Auriculares", "Corona"};
 
     static boolean has(Context c, String id) { return Prefs.get(c).getLong("ach_" + id, 0) > 0; }
 
@@ -38,17 +37,9 @@ final class Achievements {
         Prefs.get(c).edit().putLong("ach_" + id, System.currentTimeMillis()).apply();
         for (String[] a : ALL) {
             if (!a[0].equals(id)) continue;
-            String extra = a[3].isEmpty() ? "" : " · Nuevo accesorio: " + a[3];
-            UsageService.notifyAchievement(c, "🏆 Logro: " + a[1], a[2] + extra);
+            UsageService.notifyAchievement(c, "🏆 Logro: " + a[1], a[2]);
         }
         return true;
-    }
-
-    static boolean accessoryUnlocked(Context c, int acc) {
-        if (acc == 0) return true;
-        String name = ACCESSORIES[acc];
-        for (String[] a : ALL) if (a[3].equals(name)) return has(c, a[0]);
-        return false;
     }
 
     static void sawMascot(Context c, int id) {

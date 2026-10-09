@@ -361,24 +361,13 @@ final class Art {
     /** Ícono de la barra de estado. Android lo pinta de un solo color: se distingue por la forma. */
     static Bitmap statusIcon(android.content.Context ctx, int pct) {
         int style = Prefs.get(ctx).getInt("statusIcon", 1);
+        if (style > 2) style = 1;
         int s = 96;
         String txt = pct < 0 ? "-" : String.valueOf(pct);
         Bitmap b = Bitmap.createBitmap(s, s, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(b);
         Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
         p.setColor(Color.WHITE);
-        if (style == 3) {
-            // Silueta de la mascota (decorativa, sin número)
-            Bitmap spr = Mascots.sprite(Theme.widget(ctx), Mascots.current(ctx), pct, false, 0);
-            for (int y = 0; y < 16; y++) for (int x = 0; x < 16; x++) {
-                int px = spr.getPixel(x, y);
-                if (Color.alpha(px) == 0) continue;
-                float lum = (0.299f * Color.red(px) + 0.587f * Color.green(px) + 0.114f * Color.blue(px)) / 255f;
-                if (lum < 0.22f) continue;
-                c.drawRect(x * 6, y * 6, x * 6 + 6, y * 6 + 6, p);
-            }
-            return b;
-        }
         // Área disponible para el número según la forma
         float box;
         if (style == 1) {

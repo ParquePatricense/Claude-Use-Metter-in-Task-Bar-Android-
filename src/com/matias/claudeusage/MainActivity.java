@@ -72,6 +72,7 @@ public class MainActivity extends Activity {
         setTheme(th.dark ? android.R.style.Theme_DeviceDefault_NoActionBar : android.R.style.Theme_DeviceDefault_Light_NoActionBar);
         super.onCreate(b);
         d = getResources().getDisplayMetrics().density;
+        applyRefreshRate();
         getWindow().setStatusBarColor(th.bg);
         getWindow().setNavigationBarColor(th.bg);
         if (!th.dark) getWindow().getDecorView().setSystemUiVisibility(
@@ -548,15 +549,19 @@ public class MainActivity extends Activity {
 
         // Apariencia
         section(root, "Apariencia");
-        root.addView(text("Paleta", 15, th.fg));
-        root.addView(choiceList(Theme.PALETTES, "palette", 5000, true));
-        root.addView(text("Tipografía", 15, th.fg), margins(0, 8, 0, 0));
-        root.addView(choiceList(new String[]{"Normal", "Pixel"}, "font", 5100, true));
-        root.addView(text("Medidor de la app", 15, th.fg), margins(0, 8, 0, 0));
-        root.addView(choiceList(GaugeView.METERS, "meter", 5200, true));
+        groupedChoice(root, "Paleta", Theme.PAL_CATS, Theme.PAL_GROUPS, Theme.PALETTES, p.getInt("palette", 0), new Pick() {
+            public void picked(int i) { p.edit().putInt("palette", i).apply(); refreshAll(); recreate(); }
+        });
+        groupedChoice(root, "Tipografía", null, null, Theme.FONTS, p.getInt("font", 0), new Pick() {
+            public void picked(int i) { p.edit().putInt("font", i).apply(); refreshAll(); recreate(); }
+        });
+        groupedChoice(root, "Medidor de la app", null, null, GaugeView.METERS, p.getInt("meter", 0), new Pick() {
+            public void picked(int i) { p.edit().putInt("meter", i).apply(); }
+        });
         root.addView(toggle("Modo zen (solo el número y el tiempo)", "zen", false));
-        root.addView(text("Fondo animado", 15, th.fg), margins(0, 8, 0, 0));
-        root.addView(choiceList(BgView.KINDS, "bg", 5300, true));
+        groupedChoice(root, "Fondo animado", null, null, BgView.KINDS, p.getInt("bg", 0), new Pick() {
+            public void picked(int i) { p.edit().putInt("bg", i).apply(); showSettings(); }
+        });
         root.addView(toggle("Filtro retro CRT", "crt", false));
         root.addView(toggle("Transiciones animadas entre pantallas", "transitions", true));
 
@@ -566,36 +571,47 @@ public class MainActivity extends Activity {
                 + " días de uso (bebé a los 3, adulta a los 10, legendaria a los 30)", 14, th.dim));
         root.addView(toggle("Evolución (huevo → bebé → adulta → legendaria)", "evolve", true));
         root.addView(toggle("Una mascota distinta cada día", "randomDaily", false));
-        root.addView(choiceList(Mascots.names(), "mascotId", 6000, false));
-        root.addView(text("Accesorio", 15, th.fg), margins(0, 8, 0, 0));
-        String[] accNames = new String[Achievements.ACCESSORIES.length];
-        for (int i = 0; i < accNames.length; i++)
-            accNames[i] = Achievements.ACCESSORIES[i] + (Achievements.accessoryUnlocked(this, i) ? "" : " 🔒");
-        root.addView(choiceList(accNames, "accessory", 6100, false));
+        groupedChoice(root, "Elegir mascota", MascotData.CAT_NAMES, MascotData.CATS, Mascots.names(), Mascots.current(this), new Pick() {
+            public void picked(int i) {
+                p.edit().putString("mascotKey", MascotData.KEYS[i]).apply();
+                Achievements.sawMascot(MainActivity.this, i);
+                applyIcon();
+                refreshAll();
+            }
+        });
         root.addView(toggle("Mostrar la mascota arriba", "mascot", true));
         root.addView(toggle("Ícono de la app = tu mascota", "mascotIcon", false));
         root.addView(toggle("Sonidos 8-bit (avisos, tocar la mascota, confeti)", "sounds", true));
 
         // Logros
-        section(root, "Logros · " + Achievements.count(this) + "/" + Achievements.ALL.length);
-        StringBuilder ach = new StringBuilder();
+        section(root, "Logros · " + Achievements.count(this) + " de " + Achievements.ALL.length);
+        StringBuilder got = new StringBuilder(), todo = new StringBuilder();
+        int pending = 0;
         for (String[] a : Achievements.ALL) {
-            boolean got = Achievements.has(this, a[0]);
-            ach.append(got ? "★ " : "☆ ").append(a[1]).append(" — ").append(a[2]);
-            if (!a[3].isEmpty()) ach.append(" · desbloquea ").append(a[3]);
-            ach.append('\n');
+            if (Achievements.has(this, a[0])) got.append("★ ").append(a[1]).append(" — ").append(a[2]).append('\n');
+            else { todo.append("☆ ").append(a[1]).append(" — ").append(a[2]).append('\n'); pending++; }
         }
-        TextView achT = text(ach.toString().trim(), 14, th.fg);
+        TextView achT = text(got.length() > 0 ? got.toString().trim() : "Todavía no conseguiste ninguno.", 14, th.fg);
         achT.setLineSpacing(0, 1.25f);
         root.addView(achT);
+        if (pending > 0) {
+            LinearLayout hidden = collapsible(root, "Ver los que podés conseguir (" + pending + ")", false);
+            TextView t2 = text(todo.toString().trim(), 14, th.dim);
+            t2.setLineSpacing(0, 1.25f);
+            hidden.addView(t2);
+        }
         // Barra de estado y notificación
         section(root, "Barra de estado y notificación");
         root.addView(text("Android pinta los íconos de la barra de estado del mismo color que la hora. Para que el número no se confunda, elegí una forma distinta:", 13, th.dim));
-        root.addView(choiceList(new String[]{"Número grande", "Número con marco", "Número dentro de un anillo", "Silueta de la mascota (sin número)"}, "statusIcon", 7100, false));
+        if (p.getInt("statusIcon", 1) > 2) p.edit().putInt("statusIcon", 1).apply();
+        root.addView(choiceList(new String[]{"Número grande", "Número con marco", "Número dentro de un anillo"}, "statusIcon", 7100, false));
 
         // Animaciones
         section(root, "Animaciones");
         root.addView(toggle("Animaciones (medidor, gráfico, mascota)", "anim", true));
+        groupedChoice(root, "Fluidez de la app", null, null, Fps.labels(this), indexOfFps(p.getInt("appFps", 0)), new Pick() {
+            public void picked(int i) { p.edit().putInt("appFps", Fps.OPTIONS[i]).apply(); applyRefreshRate(); }
+        });
         root.addView(toggle("Pulso cuando pasás el 90%", "pulse", true));
         root.addView(toggle("Confeti cuando se reinicia la sesión", "confetti", true));
         root.addView(toggle("Segundos en la cuenta regresiva", "seconds", true));
@@ -633,22 +649,14 @@ public class MainActivity extends Activity {
         });
         root.addView(sb, margins(0, 4, 0, 12));
         root.addView(text("Estilo", 15, th.fg));
-        root.addView(choiceList(Art.STYLES, "wStyle", 3000, false));
+        groupedChoice(root, "Estilo del widget", null, null, Art.STYLES, p.getInt("wStyle", 0), new Pick() {
+            public void picked(int i) { p.edit().putInt("wStyle", i).apply(); WidgetProvider.update(MainActivity.this); }
+        });
         root.addView(toggle("Minimalista (solo la imagen, en cualquier tamaño)", "wMinimal", false));
         root.addView(toggle("Animar el widget", "wAnim", true));
-        root.addView(text("Fluidez de la animación del widget", 15, th.fg), margins(0, 8, 0, 0));
-        final String[] fpsOpts = {"60 FPS", "30 FPS"};
-        RadioGroup fg = new RadioGroup(this);
-        fg.setOrientation(RadioGroup.HORIZONTAL);
-        for (int i = 0; i < 2; i++) { RadioButton rb = radio(fpsOpts[i]); rb.setId(7000 + i); fg.addView(rb); }
-        fg.check(p.getInt("wFps", 60) >= 60 ? 7000 : 7001);
-        fg.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            public void onCheckedChanged(RadioGroup g, int id) {
-                p.edit().putInt("wFps", id == 7000 ? 60 : 30).apply();
-                WidgetProvider.update(MainActivity.this);
-            }
+        groupedChoice(root, "Fluidez del widget", null, null, Fps.labels(this), indexOfFps(p.getInt("wFps2", 60)), new Pick() {
+            public void picked(int i) { p.edit().putInt("wFps2", Fps.OPTIONS[i]).apply(); WidgetProvider.update(MainActivity.this); }
         });
-        root.addView(fg);
         int actual = p.getInt("wFpsActual", -1);
         if (actual >= 0) root.addView(text("Ahora el widget anima a " + (actual > 2 ? actual + " FPS" : actual == 0 ? "0 FPS (quieto)" : "2 cuadros (tu launcher no aceptó más)"), 13, th.dim));
         root.addView(text("Al tocar el widget", 15, th.fg), margins(0, 8, 0, 0));
@@ -883,6 +891,76 @@ public class MainActivity extends Activity {
         p.edit().putInt("iconApplied", want).apply();
     }
 
+    interface Pick { void picked(int index); }
+
+    /** Sección que se abre y se cierra tocando el título. Devuelve el contenedor de adentro. */
+    private LinearLayout collapsible(LinearLayout parent, final String title, boolean open) {
+        final TextView head = text((open ? "▾ " : "▸ ") + title, 15, th.fg);
+        head.setTypeface(Theme.font(true));
+        head.setPadding(0, dp(12), 0, dp(8));
+        final LinearLayout body = new LinearLayout(this);
+        body.setOrientation(LinearLayout.VERTICAL);
+        body.setPadding(dp(14), 0, 0, 0);
+        body.setVisibility(open ? View.VISIBLE : View.GONE);
+        head.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                boolean show = body.getVisibility() != View.VISIBLE;
+                body.setVisibility(show ? View.VISIBLE : View.GONE);
+                head.setText((show ? "▾ " : "▸ ") + title);
+            }
+        });
+        parent.addView(head);
+        parent.addView(body);
+        return body;
+    }
+
+    /**
+     * Elección única en un desplegable, con subcategorías desplegables opcionales.
+     * El título muestra lo elegido, así se ve sin abrir la lista.
+     */
+    private void groupedChoice(LinearLayout parent, final String title, String[] catNames, int[][] groups,
+                               final String[] names, int selected, final Pick pick) {
+        final LinearLayout outer = collapsible(parent, title + ": " + names[Math.max(0, Math.min(names.length - 1, selected))], false);
+        final java.util.List<RadioButton> all = new java.util.ArrayList<RadioButton>();
+        if (groups == null) { groups = new int[1][names.length]; for (int i = 0; i < names.length; i++) groups[0][i] = i; }
+        for (int g = 0; g < groups.length; g++) {
+            boolean has = false;
+            for (int i : groups[g]) if (i == selected) has = true;
+            LinearLayout box = catNames == null ? outer : collapsible(outer, catNames[g] + " (" + groups[g].length + ")", has);
+            for (final int i : groups[g]) {
+                final RadioButton rb = radio(names[i]);
+                rb.setChecked(i == selected);
+                rb.setOnClickListener(new View.OnClickListener() {
+                    public void onClick(View v) {
+                        for (RadioButton o : all) o.setChecked(o == rb);
+                        pick.picked(i);
+                    }
+                });
+                all.add(rb);
+                box.addView(rb);
+            }
+        }
+    }
+
+    private int indexOfFps(int fps) {
+        for (int i = 0; i < Fps.OPTIONS.length; i++) if (Fps.OPTIONS[i] == fps) return i;
+        return 0;
+    }
+
+    private void refreshAll() {
+        WidgetProvider.update(this);
+        startForegroundService(new Intent(this, UsageService.class));
+    }
+
+    /** Pide a la pantalla la tasa de refresco elegida (o la máxima en automático). */
+    private void applyRefreshRate() {
+        try {
+            android.view.WindowManager.LayoutParams lp = getWindow().getAttributes();
+            lp.preferredRefreshRate = Fps.app(this);
+            getWindow().setAttributes(lp);
+        } catch (Exception ignored) {}
+    }
+
     /** Color de los indicadores: marcado = acento de la paleta, sin marcar = tenue (visible en oscuro). */
     private android.content.res.ColorStateList tints() {
         return new android.content.res.ColorStateList(
@@ -896,11 +974,6 @@ public class MainActivity extends Activity {
         g.check(base + Prefs.get(this).getInt(key, 0));
         g.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             public void onCheckedChanged(RadioGroup gr, int id) {
-                if ("accessory".equals(key) && !Achievements.accessoryUnlocked(MainActivity.this, id - base)) {
-                    Toast.makeText(MainActivity.this, "Todavía no lo desbloqueaste. Mirá los logros.", Toast.LENGTH_SHORT).show();
-                    gr.check(base + Prefs.get(MainActivity.this).getInt(key, 0));
-                    return;
-                }
                 Prefs.get(MainActivity.this).edit().putInt(key, id - base).apply();
                 if ("mascotId".equals(key)) { Achievements.sawMascot(MainActivity.this, id - base); applyIcon(); }
                 WidgetProvider.update(MainActivity.this);

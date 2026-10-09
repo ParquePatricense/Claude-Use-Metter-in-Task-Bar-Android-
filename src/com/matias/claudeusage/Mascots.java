@@ -57,7 +57,21 @@ final class Mascots {
             long day = java.time.LocalDate.now().toEpochDay();
             return (int) ((day * 7919L) % count());
         }
-        return Math.max(0, Math.min(count() - 1, p.getInt("mascotId", 0)));
+        String key = p.getString("mascotKey", null);
+        if (key == null) {
+            // Migración: índice viejo → clave (las profesiones y minerales ya no existen)
+            String[] old = {"blob", "slime", "ghost", "cat", "robot", "invader", "dragon", "ninja", "mush", "capy", "penguin",
+                    "skull", "dog", "blackcat", "parrot", "hamster", "fish"};
+            int o = p.getInt("mascotId", 0);
+            key = o >= 0 && o < old.length ? old[o] : o >= 24 && o <= 26 ? new String[]{"sword", "axe", "bow"}[o - 24] : "blob";
+            p.edit().putString("mascotKey", key).apply();
+        }
+        return indexOf(key);
+    }
+
+    static int indexOf(String key) {
+        for (int i = 0; i < MascotData.KEYS.length; i++) if (MascotData.KEYS[i].equals(key)) return i;
+        return 0;
     }
 
     /** Etapa de evolución: 0 huevo, 1 bebé, 2 adulta, 3 legendaria. Según días usando la app. */
@@ -189,7 +203,7 @@ final class Mascots {
     /** Cuadros de la mascota animada en bucle de 2,4 s (para la notificación). */
     static synchronized List<Bitmap> loopFrames(Context ctx, Theme t, int pct, int size, int fps, long loop) {
         String key = current(ctx) + "/" + stage(ctx) + "/" + Art.mood(pct) + "/" + t.pal + "/" + size + "/" + fps
-                + "/" + Prefs.get(ctx).getInt("accessory", 0) + "/" + loop;
+                + "/" + loop;
         List<Bitmap> hit = loopCache.get(key);
         if (hit != null) return hit;
         if (loopCache.size() > 4) loopCache.clear();
@@ -281,7 +295,6 @@ final class Mascots {
         c.scale(sx, sy, cx, bottom);
         RectF dst = new RectF(cx - 8 * u, bottom - 16 * u, cx + 8 * u, bottom);
         c.drawBitmap(s, null, dst, pix);
-        if (stage > 0) accessory(ctx, c, s, id, dst, u, pct, blink);
         c.restore();
         if (stage == 3) aura(c, cx, box.centerY(), u, ms, anim, t);
 
@@ -303,42 +316,6 @@ final class Mascots {
                 p.setColor(Art.fade(t.mid, (int) (255 * ph)));
                 sparkle(c, cx + pos[i][0] * u, box.centerY() + pos[i][1] * u, u * (0.4f + 0.4f * ph), p);
             }
-        }
-    }
-
-    /** Accesorio elegido (si está desbloqueado), pegado a la cabeza o los ojos. */
-    private static void accessory(Context ctx, Canvas c, Bitmap s, int id, RectF dst, float u, int pct, boolean blink) {
-        int acc = Prefs.get(ctx).getInt("accessory", 0);
-        if (acc == 0 || !Achievements.accessoryUnlocked(ctx, acc)) return;
-        int top = 16;
-        for (int y = 0; y < 16 && top == 16; y++) for (int x = 6; x <= 9; x++) if (Color.alpha(s.getPixel(x, y)) > 0) { top = y; break; }
-        Paint p = new Paint();
-        String[] pat;
-        int ox, oy;
-        switch (acc) {
-            case 1: pat = new String[]{"pp.pp", "pPkPp", "pp.pp"}; ox = 10; oy = top - 1; break;          // moño
-            case 2: pat = new String[]{"...ww...", "..rrrr..", ".rrrrrr.", "wwwwwwww"}; ox = 4; oy = top - 3; break; // gorro
-            case 3: {                                                                              // anteojos
-                if (((String) MascotData.ALL[id][9]).contains("n")) return;
-                int[] e = (int[]) MascotData.ALL[id][4];
-                p.setColor(Color.parseColor("#151515"));
-                for (int k = 0; k < 2; k++) cell(c, dst, u, e[k * 2] - 1, e[k * 2 + 1], 4, 2, p);
-                cell(c, dst, u, e[0] + 3, e[1], e[2] - e[0] - 4, 1, p);
-                p.setColor(Color.WHITE);
-                cell(c, dst, u, e[0], e[1], 1, 1, p);
-                cell(c, dst, u, e[2], e[3], 1, 1, p);
-                return;
-            }
-            case 4: pat = new String[]{"..gggggggggg..", ".g..........g.", "rr..........rr", "rr..........rr"}; ox = 1; oy = top - 1; break; // auriculares
-            default: pat = new String[]{"y..y..y", "yy.y.yy", "yyyyyyy", "yrycyry"}; ox = 4; oy = top - 4; break; // corona
-        }
-        for (int j = 0; j < pat.length; j++) for (int i = 0; i < pat[j].length(); i++) {
-            char ch = pat[j].charAt(i);
-            if (ch == '.') continue;
-            p.setColor(ch == 'p' ? Color.parseColor("#F27BA0") : ch == 'P' ? Color.parseColor("#C94F7A")
-                    : ch == 'k' ? Color.parseColor("#8A2E50") : ch == 'w' ? Color.WHITE : ch == 'r' ? Color.parseColor("#E5484D")
-                    : ch == 'g' ? Color.parseColor("#3A3A44") : ch == 'c' ? Color.parseColor("#5FE3F0") : Color.parseColor("#F5C542"));
-            cell(c, dst, u, ox + i, oy + j, 1, 1, p);
         }
     }
 

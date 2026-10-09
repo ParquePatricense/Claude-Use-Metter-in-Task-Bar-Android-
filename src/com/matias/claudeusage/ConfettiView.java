@@ -56,6 +56,6 @@ class ConfettiView extends View {
             p.setColor(Art.fade(color[i], Math.max(0, alpha)));
             c.drawRect(px, py, px + s, py + s, p);
         }
-        postInvalidateOnAnimation();
+        Fps.next(this);
     }
 }

@@ -61,6 +61,6 @@ class MascotView extends View {
                     if (heart[y].charAt(x) == '1') c.drawRect(hx + x * k, hy + y * k, hx + (x + 1) * k, hy + (y + 1) * k, p);
             }
         }
-        if (anim || react >= 0) postInvalidateOnAnimation();
+        if (anim || react >= 0) Fps.next(this);
     }
 }

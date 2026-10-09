@@ -9,7 +9,17 @@ import android.graphics.Typeface;
 final class Theme {
     static final String[] PALETTES = {"Claude", "Monocromo", "Pastel", "Neón", "Game Boy",
             "Estilo NES", "Estilo Nintendo DS", "Estilo PlayStation 1", "Estilo PlayStation 2", "Estilo PlayStation 3",
-            "Estilo PlayStation 4", "Estilo PlayStation 5", "Estilo Switch", "Estilo Switch 2", "Estilo GameCube"};
+            "Estilo PlayStation 4", "Estilo PlayStation 5", "Estilo Switch", "Estilo Switch 2", "Estilo GameCube",
+            "Estilo Game Boy Advance", "PC gamer (RGB)", "PC retro (DOS)", "Estilo Steam Deck", "Estilo ROG Ally",
+            "Estilo Legion Go", "Estilo MSI Claw", "Estilo PSP", "Estilo PS Vita"};
+    static final String[] PAL_CATS = {"Básicos", "Nintendo", "PlayStation", "PC y portátiles"};
+    static final int[][] PAL_GROUPS = {{0, 1, 2, 3}, {4, 15, 5, 6, 12, 13, 14}, {7, 8, 9, 10, 11, 22, 23}, {16, 17, 18, 19, 20, 21}};
+
+    /** Tipografías: archivo en assets (null = del sistema) y si es pixelada. */
+    static final String[] FONTS = {"Normal", "Pixel", "Retro arcade", "Terminal", "Moderna", "Cuadrada", "Redonda", "Cómic", "Monoespaciada", "Arcade gruesa"};
+    private static final String[] FONT_FILES = {null, "pixel.ttf", "retro.ttf", "terminal.ttf", null, "cuadrada.ttf", "redonda.ttf", "comic.ttf", null, "arcade.ttf"};
+    private static final Typeface[] faces = new Typeface[FONTS.length];
+    static volatile int fontIdx;
 
     final boolean dark;
     int pal;
@@ -18,7 +28,6 @@ final class Theme {
     /** Paleta en uso (la app y el servicio comparten proceso). */
     static volatile Theme cur = build(0, true);
     static volatile boolean pixel;
-    private static Typeface pixelFace;
 
     private Theme(boolean dark, String bg, String card, String fg, int dimA, String track, String accent,
                   String low, String mid, String high) {
@@ -73,6 +82,21 @@ final class Theme {
             case 14: return dark // GameCube: índigo
                     ? new Theme(true, "#1E1A3A", "#2A2452", "#EEEAFF", 170, "#2DFFFFFF", "#8B7CF6", "#7BD389", "#F7C948", "#F25F5C")
                     : new Theme(false, "#E6E3F7", "#D6D1F0", "#1E1A3A", 165, "#1E000000", "#4B3FA8", "#3E9A50", "#C99A12", "#D9434A");
+            case 15: return dark // Game Boy Advance: índigo
+                    ? new Theme(true, "#1D1838", "#2A2350", "#EDE9FF", 170, "#2DFFFFFF", "#7B68EE", "#6BCB77", "#FFD93D", "#FF6B6B")
+                    : new Theme(false, "#E3DEFA", "#D2CBF5", "#1D1838", 165, "#1E000000", "#4B3FA8", "#3E9A50", "#C99A12", "#D9434A");
+            case 16: return new Theme(true, "#0D0D12", "#17171F", "#F2F2F2", 170, "#33FFFFFF", "#00E5FF", "#39FF14", "#FFEA00", "#FF1744"); // PC RGB
+            case 17: return new Theme(true, "#0000AA", "#1414C8", "#FFFFFF", 200, "#40FFFFFF", "#FFFF55", "#55FF55", "#FFFF55", "#FF5555"); // DOS
+            case 18: return dark // Steam Deck
+                    ? new Theme(true, "#1B1E24", "#262A33", "#F2F4F7", 170, "#2DFFFFFF", "#1A9FFF", "#59BF40", "#F7B32B", "#E24A4A")
+                    : new Theme(false, "#EEF1F5", "#DDE2EA", "#1B1E24", 165, "#1E000000", "#0B7FD6", "#3E9A50", "#C99A12", "#D9434A");
+            case 19: return dark // ROG Ally
+                    ? new Theme(true, "#121214", "#1E1E22", "#FFFFFF", 170, "#2DFFFFFF", "#FF1E46", "#00E5A0", "#FFC400", "#FF1E46")
+                    : new Theme(false, "#F4F4F6", "#E4E4E8", "#121214", 165, "#1E000000", "#D90F33", "#1FA56E", "#C99A00", "#D90F33");
+            case 20: return new Theme(true, "#16181D", "#22252C", "#F0F2F5", 170, "#2DFFFFFF", "#E23D28", "#3FB27F", "#F2B134", "#E23D28"); // Legion Go
+            case 21: return new Theme(true, "#0F0F10", "#1B1B1D", "#F5F5F5", 170, "#2DFFFFFF", "#E6B422", "#3FBF7F", "#E6B422", "#E5484D"); // MSI Claw
+            case 22: return new Theme(true, "#0E0E10", "#1A1A1E", "#EDEDED", 170, "#2DFFFFFF", "#3D6FD9", "#4CAF50", "#FFC107", "#E53935"); // PSP
+            case 23: return new Theme(true, "#0A0F1A", "#141C2C", "#EEF4FF", 170, "#2DFFFFFF", "#00A5FF", "#2ECC71", "#F1C40F", "#E74C3C"); // PS Vita
             case 4: return new Theme(false, "#9BBC0F", "#8BAC0F", "#0F380F", 200, "#8BAC0F", "#306230", "#306230", "#306230", "#0F380F");
             default: return dark
                     ? new Theme(true, "#1F1E1D", "#2A2927", "#FFFFFF", 170, "#2DFFFFFF", "#D97757", "#46A758", "#F5A524", "#E5484D")
@@ -100,14 +124,21 @@ final class Theme {
     }
 
     private static void load(Context c) {
-        pixel = Prefs.get(c).getInt("font", 0) == 1;
-        if (pixelFace == null) {
-            try { pixelFace = Typeface.createFromAsset(c.getAssets(), "pixel.ttf"); } catch (Exception e) { pixelFace = Typeface.MONOSPACE; }
+        int f = Prefs.get(c).getInt("font", 0);
+        if (f < 0 || f >= FONTS.length) f = 0;
+        fontIdx = f;
+        // Pixel, retro arcade y terminal: también pixelan los dibujos
+        pixel = f == 1 || f == 2 || f == 3;
+        if (FONT_FILES[f] != null && faces[f] == null) {
+            try { faces[f] = Typeface.createFromAsset(c.getAssets(), FONT_FILES[f]); } catch (Exception e) { faces[f] = Typeface.DEFAULT; }
         }
     }
 
     static Typeface font(boolean bold) {
-        if (pixel && pixelFace != null) return pixelFace;
+        int f = fontIdx;
+        if (FONT_FILES[f] != null && faces[f] != null) return faces[f];
+        if (f == 4) return Typeface.create("sans-serif-medium", bold ? Typeface.BOLD : Typeface.NORMAL);
+        if (f == 8) return Typeface.create(Typeface.MONOSPACE, bold ? Typeface.BOLD : Typeface.NORMAL);
         return bold ? Typeface.create(Typeface.DEFAULT, Typeface.BOLD) : Typeface.DEFAULT;
     }
 

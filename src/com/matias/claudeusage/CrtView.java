@@ -40,7 +40,7 @@ class CrtView extends View {
             float by = (t % 6000) / 6000f * (h + 120 * d) - 60 * d;
             flick.setColor(Color.argb(14, 255, 255, 255));
             c.drawRect(0, by, w, by + 60 * d, flick);
-            postInvalidateOnAnimation();
+            Fps.next(this);
         }
     }
 }

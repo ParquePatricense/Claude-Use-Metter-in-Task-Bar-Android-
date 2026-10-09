@@ -39,7 +39,7 @@ public class WidgetProvider extends AppWidgetProvider {
         int[] ids = m.getAppWidgetIds(new ComponentName(c, WidgetProvider.class));
         if (ids.length == 0) return;
         SharedPreferences pp = Prefs.get(c);
-        int fps = pp.getBoolean("wAnim", true) ? pp.getInt("wFps", 60) : 0;
+        int fps = pp.getBoolean("wAnim", true) ? Fps.widget(c) : 0;
         // Intenta a los FPS elegidos; si el launcher no acepta tantos cuadros, baja a 30 y después a 2
         // Sin cambios visibles: no reenvía (ahorra batería; el launcher sigue animando solo)
         Usage u = Usage.load(c);
@@ -49,7 +49,12 @@ public class WidgetProvider extends AppWidgetProvider {
         if (key.equals(lastKey) && now - lastPush < 10 * 60_000) return;
         lastKey = key;
         lastPush = now;
-        int[] tries = fps >= 60 ? new int[]{60, 30, 2} : fps >= 30 ? new int[]{30, 2} : new int[]{0};
+        // Intenta los FPS elegidos; si el launcher no acepta tantos cuadros, baja de a poco
+        java.util.List<Integer> list = new java.util.ArrayList<Integer>();
+        if (fps <= 0) list.add(0);
+        else for (int f : new int[]{fps, 120, 90, 60, 30, 2}) if (f <= fps && !list.contains(f)) list.add(f);
+        int[] tries = new int[list.size()];
+        for (int i = 0; i < tries.length; i++) tries[i] = list.get(i);
         for (int f : tries) {
             try {
                 push(c, m, ids, f);
@@ -64,7 +69,7 @@ public class WidgetProvider extends AppWidgetProvider {
     private static String visualKey(Context c, Usage u, int fps) {
         SharedPreferences p = Prefs.get(c);
         return u.pct + "/" + u.week + "/" + p.getInt("wStyle", 0) + "/" + p.getInt("palette", 0) + "/" + p.getInt("font", 0)
-                + "/" + Mascots.current(c) + "/" + Mascots.stage(c) + "/" + p.getInt("accessory", 0) + "/" + fps;
+                + "/" + Mascots.current(c) + "/" + Mascots.stage(c) + "/" + fps;
     }
 
     private static List<Bitmap> frames(Context c, Theme t, Usage u, int fps) {
@@ -94,7 +99,7 @@ public class WidgetProvider extends AppWidgetProvider {
         Usage u = Usage.load(c);
         float d = c.getResources().getDisplayMetrics().density;
         List<Bitmap> fr = frames(c, t, u, fps);
-        int interval = fps > 2 ? Math.max(16, 1000 / fps) : fps > 0 ? 900 : 3_600_000;
+        int interval = fps > 2 ? Math.max(1, 1000 / fps) : fps > 0 ? 900 : 3_600_000;
         Bitmap sbar = Art.bar(t, u.pct, 400, 14);
         Bitmap wbar = Art.bar(t, u.week, 400, 14);
 

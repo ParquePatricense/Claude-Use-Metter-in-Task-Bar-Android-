@@ -141,3 +141,81 @@ ORDER+=["dog","blackcat","parrot","hamster","fish","builder","engineer","archite
 for k in ORDER:
     for f in M[k]["frames"]:
         assert len(f)==16 and all(len(r)==16 for r in f), (k,[len(r) for r in f])
+
+# ======== Tanda 3: personajes inspirados en juegos y cultura (diseños propios) ========
+def outline(rows, ch="o"):
+    """Agrega contorno alrededor de lo dibujado (pixeles vacíos vecinos)."""
+    g=[list(r) for r in rows]; out=[list(r) for r in rows]
+    for y in range(16):
+        for x in range(16):
+            if g[y][x]!=".": continue
+            for dx,dy in ((1,0),(-1,0),(0,1),(0,-1)):
+                X,Y=x+dx,y+dy
+                if 0<=X<16 and 0<=Y<16 and g[Y][X] not in ".":
+                    out[y][x]=ch; break
+    return ["".join(r) for r in out]
+def G(key,name,frames,cols,eyes,mouth,anim="bob",eye="k",noface=False,sweat=(14,1),nose=None):
+    M[key]=dict(name=name, colors=cols, eyes=eyes, mouth=mouth, sweat=sweat, frames=[full(f) for f in frames], anim=anim, eye=eye, noface=noface, **({"nose":nose} if nose else {}))
+# Fontanero (rojo / verde)
+plumb=mirror(["........",".....aaa","....aaaa","...aaaaa","..aaaaaa","..kkbbbb",".kkbbbbb",".kbbbbbb",".kbbbbbb","..bbbbbn","..bbkkkk","...bbbbb","....bbbb","..aavvvv",".aaavyvv",".aavvvvv"])
+plumb=setpx(plumb,[(7,2),(8,2),(7,3),(8,3)],"w")
+plumb=outline(plumb)
+G("plumber_r","Fontanero rojo",[plumb],dict(b="#F2C9A0",a="#E52521",k="#5B3A1E",v="#2B4FD1",y="#F5C542",n="#D99A6C",w="#FFFFFF",o="#2A1A12"),((5,7),(9,7)),None)
+G("plumber_g","Fontanero verde",[plumb],dict(b="#F2C9A0",a="#2FAE4E",k="#5B3A1E",v="#2B4FD1",y="#F5C542",n="#D99A6C",w="#FFFFFF",o="#14241A"),((5,7),(9,7)),None)
+# Erizo azul
+hog=mirror(["..b.....","..bb...b","..bbb.bb",".bbbbbbb","bbbbbbbb",".bbbbbbb","bbbbwwww",".bbbwwww","bbbbwwww",".bbbbmmm","..bbmmmm","..bbmmmm","...bbmmm","....bbbb","........","........"])
+hog=setpx(hog,[(7,9),(8,9)],"k"); hog=outline(hog)
+G("hedgehog","Erizo azul",[hog],dict(b="#1E5BD8",w="#FFFFFF",m="#F3C892",k="#151515",o="#0B1F4D"),((5,7),(9,7)),(6,11),anim="hover")
+# Rangers
+rng=mirror(["........",".....aaa","....aaaa","...aaaaa","..aaaaaa",".aaakkkk",".aakkkkk",".aakkkkk",".aaakkkk",".aaaakkk",".aaaaaak","..aaaagg","...aaagg","..wwaaaa",".aaawwaa",".aaaaaaa"])
+rng=outline(rng)
+for key,nm,col in (("ranger_r","Ranger rojo","#E53935"),("ranger_b","Ranger azul","#1E88E5"),("ranger_p","Ranger rosa","#EC407A"),("ranger_y","Ranger amarillo","#FDD835"),("ranger_g","Ranger verde","#43A047"),("ranger_k","Ranger negro","#3A3A44")):
+    G(key,nm,[rng],dict(b=col,a=col,k="#111116",g="#B8C0CC",w="#FFFFFF",c="#7FF7FF",o="#141418"),((5,7),(9,7)),None,eye="c",anim="bob")
+# Minero cúbico y minera cúbica
+steve=full(["................","..kkkkkkkkkkkk..","..kkkkkkkkkkkk..","..kbbbbbbbbbbk..","..bbbbbbbbbbbb..","..bbbbbbbbbbbb..","..bbbbbbbbbbbb..","..bbwbbbbbbwbb..","..bbwbbbbbbwbb..","..bbbbbnnbbbbb..","..bbbnnnnnnbbb..","..bbbbbbbbbbbb..","..bbbbbbbbbbbb..","..cccccccccccc..","..cccccccccccc..","..cccccccccccc.."])
+G("miner","Minero cúbico",[outline(steve)],dict(b="#C9926B",k="#3B2615",n="#7A4A30",w="#FFFFFF",c="#00A6A6",o="#1C130C"),((5,7),(9,7)),None,eye="e" if False else "v")
+M["miner"]["colors"]["v"]="#4A3B9C"
+alex=[list(r) for r in steve]
+for y in range(1,10): alex[y][12]="k"
+for x in range(2,14): alex[3][x]="k" if x<8 else alex[3][x]
+alex=["".join(r) for r in alex]
+G("minerf","Minera cúbica",[outline(alex)],dict(b="#E8B08A",k="#D86A1E",n="#B57454",w="#FFFFFF",c="#5FA34F",v="#2E8B57",o="#2A160A"),((5,7),(9,7)),None,eye="v")
+# Explosivo verde (cara fija)
+cre=[list("..bbbbbbbbbbbb..") for _ in range(16)]
+import random; random.seed(3)
+for y in range(16):
+    for x in range(2,14):
+        cre[y][x]=random.choice("bbbdh")
+for x,y in [(4,4),(5,4),(4,5),(5,5),(10,4),(11,4),(10,5),(11,5),(7,6),(8,6),(6,7),(7,7),(8,7),(9,7),(6,8),(7,8),(8,8),(9,8),(6,9),(9,9)]: cre[y][x]="k"
+cre=["".join(r) for r in cre]
+G("creeper","Explosivo verde",[outline(cre)],dict(b="#5BBA47",d="#3E8C2F",h="#8FD67E",k="#101010",o="#1A2E14"),((4,4),(10,4)),None,noface=True,anim="squash",sweat=(14,0))
+# Comecocos
+pac=full(["................","....oooooo......","...oyyyyyyo.....","..oyyyyyyyyo....",".oyyykyyyyyyo...",".oyyyyyyyyo.....",".oyyyyyyyo......",".oyyyyyyo.......",".oyyyyyyyo......",".oyyyyyyyyo.....",".oyyyyyyyyyyo...","..oyyyyyyyyo....","...oyyyyyyo.....","....oooooo......","................","................"])
+pacB=full(["................","....oooooo......","...oyyyyyyo.....","..oyyyyyyyyo....",".oyyykyyyyyyo...",".oyyyyyyyyyyo...",".oyyyyyyyyyyyo..",".oyyyyyyyyyyyo..",".oyyyyyyyyyyyo..",".oyyyyyyyyyyo...",".oyyyyyyyyyyo...","..oyyyyyyyyo....","...oyyyyyyo.....","....oooooo......","................","................"])
+G("pac","Comecocos",[pac,pacB],dict(b="#FFD300",y="#FFD300",k="#111111",o="#7A5A00"),((4,4),(8,4)),None,noface=True,anim="march",sweat=(11,1))
+# Bola rosa
+puff=mirror(["........","........","....oooo","...obbbb","..obhbbb",".obbbbbb",".obbbbbb",".obbbbbb",".obbbbbb",".obbbbbb","..obbbbb","..orrrob","..orrrro","...oooo.","........","........"])
+puff=setpx(puff,[(11,4),(12,5)],"b")
+G("puff","Bola rosa",[puff],dict(b="#F7A8C8",r="#E0315A",o="#7A2747"),((5,6),(9,6)),(6,9),anim="squash",eye="k")
+# Héroe del bosque
+elf=full(["................","...........gg...","..........ggg...","......ggggggg...","....gggggggg....","...ggggggggg....","..yyyyyyyyyyy...","..ybbbbbbbbby...",".obbbbbbbbbbbo..",".bbbbbbbbbbbbb..","..bbbbbbbbbbb...","...bbbbbbbbb....","....bbbbbbb.....","..ggggggggggg...",".gggggkkgggggg..",".gggggggggggggg."])
+G("elf","Héroe del bosque",[outline(elf)],dict(b="#F2C9A0",g="#2E9E44",y="#F2D16B",k="#6B4226",o="#14301A"),((4,8),(9,8)),(5,11),eye="v")
+M["elf"]["colors"]["v"]="#2B5FD9"
+# Robot azul
+mega=mirror(["........",".....aaa","...aaaaa","..aaaaac","..aaaacc",".aaabbbb",".aabbbbb",".aabbbbb",".aabbbbb",".aabbbbb","..abbbbb","...bbbbb","....bbbb","..aaaaaa",".acaaaaa",".aaaaaaa"])
+mega=outline(mega)
+G("bluebot","Robot azul",[mega],dict(b="#F2C9A0",a="#1E6FE0",c="#5EC8FF",o="#0C1E40"),((5,7),(9,7)),(6,10),eye="v")
+M["bluebot"]["colors"]["v"]="#1E6FE0"
+# Dinosaurio verde
+dino=full(["................","....oooo........","...obbbbo.......","..owwbbwwo......","..owkbbwko......","..obbbbbbbooo...","..obbbbbbbbbbo..","..obbbbbbbbbbbo.","..obbbbbbbbbbbo.","..obbbbbbbbbbo..","..owwwwwwwwwo...","..owwwwwwwwo....","...obbbbbbo.....","...orrroorro....","....ooo..ooo....","................"])
+G("dino","Dinosaurio verde",[dino],dict(b="#5BC236",w="#FFFFFF",k="#111111",r="#E0471F",o="#1D3D12"),((3,3),(7,3)),(5,9),noface=True,anim="hover",sweat=(13,1))
+GAMING=["plumber_r","plumber_g","hedgehog","ranger_r","ranger_b","ranger_p","ranger_y","ranger_g","ranger_k","miner","minerf","creeper","pac","puff","elf","bluebot","dino"]
+for k in GAMING:
+    for f in M[k]["frames"]: assert len(f)==16 and all(len(r)==16 for r in f), k
+
+# ======== Orden final y categorías (sin profesiones ni minerales) ========
+CATS=[("Clásicas",["blob","slime","ghost","cat","robot","invader","dragon","ninja","mush","capy","penguin","skull"]),
+      ("Animales",["dog","blackcat","parrot","hamster","fish"]),
+      ("Juegos y cultura",GAMING),
+      ("Armas medievales",["sword","axe","bow"])]
+ORDER=[k for _,ks in CATS for k in ks]
