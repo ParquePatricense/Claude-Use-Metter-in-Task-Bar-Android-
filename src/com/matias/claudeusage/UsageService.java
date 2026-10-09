@@ -211,7 +211,7 @@ public class UsageService extends Service {
         if (!p.getBoolean("smart", true)) return 30 * SEC;
         long now = System.currentTimeMillis();
         Usage u = Usage.load(this);
-        if (u.error != null) return MIN;
+        if (u.error != null) return Math.min(15 * MIN, MIN << Math.min(4, Math.max(0, failures - 1)));
         if (u.reset > 0 && u.reset - now < 7 * MIN && u.reset - now > -2 * MIN) return 30 * SEC;
         boolean screen = ((PowerManager) getSystemService(POWER_SERVICE)).isInteractive();
         if (!screen) return 10 * MIN;
@@ -239,12 +239,22 @@ public class UsageService extends Service {
             web = new WebView(getApplicationContext());
             web.getSettings().setJavaScriptEnabled(true);
             web.getSettings().setDomStorageEnabled(true);
+            // Seguridad: sin acceso a archivos del teléfono y con Navegación segura
+            web.getSettings().setAllowFileAccess(false);
+            web.getSettings().setAllowContentAccess(false);
+            if (Build.VERSION.SDK_INT >= 26) web.getSettings().setSafeBrowsingEnabled(true);
             web.addJavascriptInterface(new Bridge(), "Bridge");
             web.setWebViewClient(new WebViewClient() {
                 @Override
+                public boolean shouldOverrideUrlLoading(WebView v, android.webkit.WebResourceRequest r) {
+                    // El lector solo navega dentro de claude.ai (el puente nunca queda expuesto a otro sitio)
+                    return !isClaude(r.getUrl());
+                }
+
+                @Override
                 public void onPageFinished(WebView v, String url) {
-                    pageReady = true;
-                    v.evaluateJavascript(JS, null);
+                    pageReady = isClaude(android.net.Uri.parse(url));
+                    if (pageReady) v.evaluateJavascript(JS, null);
                 }
             });
             pageReady = false;
@@ -260,6 +270,10 @@ public class UsageService extends Service {
         }
     }
 
+    static boolean isClaude(android.net.Uri u) {
+        return u != null && "https".equals(u.getScheme()) && "claude.ai".equals(u.getHost());
+    }
+
     private class Bridge {
         @JavascriptInterface
         public void result(final String s) {
@@ -270,6 +284,7 @@ public class UsageService extends Service {
     }
 
     private void handle(String s) {
+        if (s != null && s.length() > 20000) s = "ERR:" + L.t("datos inválidos: ") + "size";
         Usage u = Usage.load(this);
         if (s == null || s.startsWith("ERR:")) {
             failures++;
@@ -289,7 +304,8 @@ public class UsageService extends Service {
                 p.edit().putBoolean("expired", false).apply();
                 getSystemService(NotificationManager.class).cancel(ID_EXPIRED);
             }
-            String org = o.optString("n", "");
+            String org = o.optString("n", "").replaceAll("[\\p{Cntrl}<>]", "");
+            if (org.length() > 60) org = org.substring(0, 60);
             JSONObject acc = Prefs.active(this);
             if (!org.isEmpty() && acc != null && acc.optString("name", "").startsWith(L.t("Cuenta "))) {
                 Prefs.setActiveField(this, "name", org.replace("'s Organization", ""));

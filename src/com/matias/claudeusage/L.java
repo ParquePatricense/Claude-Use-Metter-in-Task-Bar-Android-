@@ -32,6 +32,7 @@ final class L {
         }
     }
 
+
     private static Map<String, String> en() {
         Map<String, String> m = new HashMap<String, String>();
         m.put("Primer dato", "First reading");
@@ -351,6 +352,14 @@ final class L {
         m.put("Sin datos todavía", "No data yet");
         m.put("Abrí la app", "Open the app");
         m.put("Actualizado ", "Updated ");
+        m.put("Seguridad", "Security");
+        m.put("Bloquear la app con huella o PIN", "Lock the app with fingerprint or PIN");
+        m.put("Claude Uso bloqueada", "Claude Uso is locked");
+        m.put("Desbloqueá para ver tu uso", "Unlock to see your usage");
+        m.put("Desbloquear", "Unlock");
+        m.put("¿Volver a iniciar sesión? Se cierra la sesión actual en esta cuenta.", "Sign in again? The current session on this account will be closed.");
+        m.put("La sessionKey no tiene un formato válido.", "The sessionKey doesn't have a valid format.");
+        m.put("el archivo es demasiado grande", "the file is too large");
         m.put("Clásicas", "Classics");
         m.put("Animales", "Animals");
         m.put("Juegos y cultura", "Games and culture");
@@ -713,6 +722,14 @@ final class L {
         m.put("Sin datos todavía", "Ancora nessun dato");
         m.put("Abrí la app", "Apri l'app");
         m.put("Actualizado ", "Aggiornato ");
+        m.put("Seguridad", "Sicurezza");
+        m.put("Bloquear la app con huella o PIN", "Blocca l'app con impronta o PIN");
+        m.put("Claude Uso bloqueada", "Claude Uso è bloccata");
+        m.put("Desbloqueá para ver tu uso", "Sblocca per vedere il tuo utilizzo");
+        m.put("Desbloquear", "Sblocca");
+        m.put("¿Volver a iniciar sesión? Se cierra la sesión actual en esta cuenta.", "Accedere di nuovo? La sessione attuale di questo account verrà chiusa.");
+        m.put("La sessionKey no tiene un formato válido.", "La sessionKey non ha un formato valido.");
+        m.put("el archivo es demasiado grande", "il file è troppo grande");
         m.put("Clásicas", "Classiche");
         m.put("Animales", "Animali");
         m.put("Juegos y cultura", "Giochi e cultura");
@@ -1075,6 +1092,14 @@ final class L {
         m.put("Sin datos todavía", "Pas encore de données");
         m.put("Abrí la app", "Ouvre l'app");
         m.put("Actualizado ", "Mis à jour ");
+        m.put("Seguridad", "Sécurité");
+        m.put("Bloquear la app con huella o PIN", "Verrouiller l'app par empreinte ou code");
+        m.put("Claude Uso bloqueada", "Claude Uso est verrouillée");
+        m.put("Desbloqueá para ver tu uso", "Déverrouille pour voir ton utilisation");
+        m.put("Desbloquear", "Déverrouiller");
+        m.put("¿Volver a iniciar sesión? Se cierra la sesión actual en esta cuenta.", "Te reconnecter ? La session actuelle de ce compte sera fermée.");
+        m.put("La sessionKey no tiene un formato válido.", "La sessionKey n'a pas un format valide.");
+        m.put("el archivo es demasiado grande", "le fichier est trop volumineux");
         m.put("Clásicas", "Classiques");
         m.put("Animales", "Animaux");
         m.put("Juegos y cultura", "Jeux et culture");
@@ -1437,6 +1462,14 @@ final class L {
         m.put("Sin datos todavía", "Noch keine Daten");
         m.put("Abrí la app", "Öffne die App");
         m.put("Actualizado ", "Aktualisiert ");
+        m.put("Seguridad", "Sicherheit");
+        m.put("Bloquear la app con huella o PIN", "App mit Fingerabdruck oder PIN sperren");
+        m.put("Claude Uso bloqueada", "Claude Uso ist gesperrt");
+        m.put("Desbloqueá para ver tu uso", "Entsperre, um deine Nutzung zu sehen");
+        m.put("Desbloquear", "Entsperren");
+        m.put("¿Volver a iniciar sesión? Se cierra la sesión actual en esta cuenta.", "Erneut anmelden? Die aktuelle Sitzung dieses Kontos wird beendet.");
+        m.put("La sessionKey no tiene un formato válido.", "Der sessionKey hat kein gültiges Format.");
+        m.put("el archivo es demasiado grande", "die Datei ist zu groß");
         m.put("Clásicas", "Klassiker");
         m.put("Animales", "Tiere");
         m.put("Juegos y cultura", "Spiele und Kultur");
@@ -1799,6 +1832,14 @@ final class L {
         m.put("Sin datos todavía", "まだデータなし");
         m.put("Abrí la app", "アプリを開いて");
         m.put("Actualizado ", "更新 ");
+        m.put("Seguridad", "セキュリティ");
+        m.put("Bloquear la app con huella o PIN", "指紋またはPINでアプリをロック");
+        m.put("Claude Uso bloqueada", "Claude Usoはロック中");
+        m.put("Desbloqueá para ver tu uso", "ロックを解除して使用量を表示");
+        m.put("Desbloquear", "ロック解除");
+        m.put("¿Volver a iniciar sesión? Se cierra la sesión actual en esta cuenta.", "再ログインしますか？このアカウントの現在のセッションは終了します。");
+        m.put("La sessionKey no tiene un formato válido.", "sessionKeyの形式が正しくありません。");
+        m.put("el archivo es demasiado grande", "ファイルが大きすぎます");
         m.put("Clásicas", "クラシック");
         m.put("Animales", "動物");
         m.put("Juegos y cultura", "ゲームとカルチャー");
@@ -2161,6 +2202,14 @@ final class L {
         m.put("Sin datos todavía", "暂无数据");
         m.put("Abrí la app", "打开应用");
         m.put("Actualizado ", "更新于 ");
+        m.put("Seguridad", "安全");
+        m.put("Bloquear la app con huella o PIN", "用指纹或PIN锁定应用");
+        m.put("Claude Uso bloqueada", "Claude Uso已锁定");
+        m.put("Desbloqueá para ver tu uso", "解锁以查看用量");
+        m.put("Desbloquear", "解锁");
+        m.put("¿Volver a iniciar sesión? Se cierra la sesión actual en esta cuenta.", "重新登录？此账号的当前会话将被关闭。");
+        m.put("La sessionKey no tiene un formato válido.", "sessionKey格式无效。");
+        m.put("el archivo es demasiado grande", "文件过大");
         m.put("Clásicas", "经典");
         m.put("Animales", "动物");
         m.put("Juegos y cultura", "游戏与文化");

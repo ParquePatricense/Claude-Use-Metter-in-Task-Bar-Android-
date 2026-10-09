@@ -108,18 +108,21 @@ Todas las opciones, sección por sección. Las listas se abren y cierran con el 
 | 🔔 **Barra de estado y notificación** | Ícono de la barra: número grande / con marco / dentro de un anillo · Imagen de la notificación: tu mascota / estilo del widget / solo el ícono · Botones: Actualizar, Ir a Claude, Claude Code, Ver uso en Claude |
 | 🎞️ **Animaciones** | Animaciones sí/no · **Fluidez de la app**: automática (tasa de refresco de la pantalla) o fija en 24, 30, 48, 60, 90, 120, 144, 165 FPS · Pulso al pasar el 90% · Confeti al reiniciarse · Segundos en la cuenta regresiva |
 | ⏰ **Actualización y avisos** | Intervalo inteligente · Aviso 5 min antes del reinicio · Resumen semanal los lunes · Vibraciones con patrón · Modo ahorro automático · No molestar inteligente (muestra tu horario de sueño detectado) · Vibrar al actualizar desde el widget o Ajustes rápidos |
-| 🤖 **Modos y automatización** | Modo "Concentración Claude" · Activar al 90% o 100% · Dar permiso de No molestar · Avisos para Tasker/MacroDroid |
+| 🤖 **Modos y automatización** | Modo "Concentración Claude" · Activar al 90% o 100% · Dar permiso de No molestar · Avisos para Tasker/MacroDroid (apagados por defecto) |
 | 🧩 **Widget de inicio** | Opacidad del fondo · Estilo del widget (7) · Minimalista · Animar el widget · **Fluidez del widget** (automática o 24–165 FPS) · Indicador de FPS actual · Al tocar: actualizar / abrir la app |
 | 💾 **Datos** | Exportar historial (CSV para Excel) · Copia de seguridad (ajustes + historial) · Restaurar copia · Respaldo automático semanal · Elegir carpeta · Respaldar ahora |
+| 🔐 **Seguridad** | Bloquear la app con huella, rostro o PIN |
 | ℹ️ **Otros** | Cómo usar el widget en la pantalla de bloqueo, los atajos, el Asistente de Google, el botón de Ajustes rápidos, el Always On Display y el Galaxy Watch · Permitir que funcione en segundo plano · Apagar widget y notificación |
 
 ---
 
-## 🔒 Privacidad
+## 🔒 Privacidad y seguridad
 
-- 📱 La sesión de Claude se guarda **solo en tu teléfono**.
-- 🌐 La app solo se conecta a claude.ai para leer el uso.
-- 🚫 Las copias de seguridad no incluyen las sesiones iniciadas.
+- 📱 La sesión de Claude se guarda **solo en tu teléfono**, cifrada con una llave del Keystore de Android (AES-256-GCM).
+- 🌐 La app solo se conecta a `https://claude.ai` para leer el uso. El tráfico HTTP sin cifrar está bloqueado.
+- 🚫 Las copias en la nube y la transferencia entre teléfonos están desactivadas; las copias de la propia app no incluyen sesiones.
+- 🔐 Bloqueo opcional con huella, rostro o PIN.
+- 🧾 Revisión de seguridad completa de 20 puntos: **[SECURITY.md](SECURITY.md)** (en inglés).
 
 ---
 

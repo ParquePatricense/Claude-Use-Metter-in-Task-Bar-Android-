@@ -21,7 +21,7 @@ import java.util.TreeSet;
 /** Copia de seguridad: ajustes + historial + nombres de cuentas. No incluye sesiones (cookies). */
 final class Backup {
     private static final String[] SKIP = {"accounts", "active", "pct", "week", "reset", "weekReset", "updated",
-            "error", "extra", "alertWin", "alertLvl", "preWin", "expired", "lastChange", "status", "backupTree", "lastAutoBackup"};
+            "error", "extra", "alertWin", "alertLvl", "preWin", "expired", "lastChange", "status", "backupTree", "lastAutoBackup", "zenRule", "iconApplied"};
 
     static void write(Context c, Uri uri) {
         try {
@@ -111,13 +111,15 @@ final class Backup {
 
     static boolean read(Context c, Uri uri) {
         try {
-            JSONObject root = new JSONObject(readAll(c.getContentResolver().openInputStream(uri)));
+            String raw = readAll(c.getContentResolver().openInputStream(uri));
+            if (raw.length() > 20_000_000) throw new IllegalArgumentException(L.t("el archivo es demasiado grande"));
+            JSONObject root = new JSONObject(raw);
             if (!"claude-uso".equals(root.optString("app"))) throw new IllegalArgumentException(L.t("no es una copia de esta app"));
             SharedPreferences.Editor ed = Prefs.get(c).edit();
             JSONObject prefs = root.getJSONObject("prefs");
             for (Iterator<String> it = prefs.keys(); it.hasNext(); ) {
                 String k = it.next();
-                if (skip(k)) continue;
+                if (skip(k) || !k.matches("[A-Za-z0-9_]{1,40}")) continue;
                 JSONObject o = prefs.getJSONObject(k);
                 String t = o.getString("t");
                 if (t.equals("b")) ed.putBoolean(k, o.getBoolean("v"));
@@ -132,7 +134,10 @@ final class Backup {
                 JSONObject a = in.getJSONObject(i);
                 boolean found = false;
                 for (int k = 0; k < accs.length(); k++) if (accs.getJSONObject(k).optString("id").equals(a.optString("id"))) found = true;
-                if (!found) accs.put(new JSONObject().put("id", a.optString("id")).put("name", a.optString("name")));
+                String aid = a.optString("id"), aname = a.optString("name").replaceAll("[\\p{Cntrl}<>]", "");
+                if (!aid.matches("[a-f0-9-]{8,36}")) continue;
+                if (aname.length() > 60) aname = aname.substring(0, 60);
+                if (!found) accs.put(new JSONObject().put("id", aid).put("name", aname));
             }
             Prefs.get(c).edit().putString("accounts", accs.toString()).apply();
             // Historial: une lo existente con lo de la copia
@@ -140,10 +145,12 @@ final class Backup {
             int n = 0;
             for (Iterator<String> it = hist == null ? null : hist.keys(); it != null && it.hasNext(); ) {
                 String id = it.next();
+                if (!id.matches("[a-f0-9-]{8,36}")) continue;   // evita rutas de archivo raras
                 File f = new File(c.getFilesDir(), "history_" + id + ".csv");
                 TreeSet<String> lines = new TreeSet<String>();
                 if (f.exists()) for (String l : readAll(new FileInputStream(f)).split("\n")) if (!l.isEmpty()) lines.add(l);
-                for (String l : hist.getString(id).split("\n")) if (!l.isEmpty()) lines.add(l);
+                for (String l : hist.getString(id).split("\n"))
+                    if (l.matches("\\d{10,14},\\d{1,3},\\d{1,3}(,\\d{1,12})?")) lines.add(l);   // solo filas válidas
                 StringBuilder sb = new StringBuilder();
                 for (String l : lines) sb.append(l).append('\n');
                 FileOutputStream out = new FileOutputStream(f);

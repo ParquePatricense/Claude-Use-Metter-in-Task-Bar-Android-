@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Nada de la app se copia a la nube ni a otro teléfono: la sesión de Claude nunca sale de este dispositivo. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" path="."/>
+        <exclude domain="sharedpref" path="."/>
+        <exclude domain="file" path="."/>
+        <exclude domain="database" path="."/>
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="root" path="."/>
+        <exclude domain="sharedpref" path="."/>
+        <exclude domain="file" path="."/>
+        <exclude domain="database" path="."/>
+    </device-transfer>
+</data-extraction-rules>

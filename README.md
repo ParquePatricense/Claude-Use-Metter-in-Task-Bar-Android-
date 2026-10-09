@@ -108,18 +108,21 @@ Every option, section by section. Lists open and close with the round button on 
 | 🔔 **Status bar & notification** | Status bar icon: big number / framed number / number inside a ring · Notification image: your pet / widget style / app icon only · Notification buttons: Refresh, Open Claude, Claude Code, See usage on Claude |
 | 🎞️ **Animations** | Animations on/off · **App smoothness**: automatic (your screen's refresh rate) or fixed 24, 30, 48, 60, 90, 120, 144, 165 FPS · Pulse past 90% · Confetti on reset · Seconds in the countdown |
 | ⏰ **Updates & alerts** | Smart interval · Alert 5 min before reset · Weekly summary on Mondays · Patterned vibrations · Automatic saver mode · Smart Do Not Disturb (shows your detected sleep hours) · Vibrate when refreshing from the widget or Quick Settings |
-| 🤖 **Modes & automation** | "Claude Focus" mode · Turn on at 90% or 100% · Grant Do Not Disturb access · Events for Tasker/MacroDroid |
+| 🤖 **Modes & automation** | "Claude Focus" mode · Turn on at 90% or 100% · Grant Do Not Disturb access · Events for Tasker/MacroDroid (off by default) |
 | 🧩 **Home screen widget** | Background opacity · Widget style (7) · Minimal mode · Animate the widget · **Widget smoothness** (automatic or 24–165 FPS) · Current FPS indicator · On tap: refresh / open the app |
 | 💾 **Data** | Export history (CSV for Excel) · Backup (settings + history) · Restore backup · Weekly automatic backup · Choose backup folder · Back up now |
+| 🔐 **Security** | Lock the app with fingerprint, face or PIN |
 | ℹ️ **Other** | How to use the lock screen widget, shortcuts, Google Assistant, Quick Settings tile, Always On Display and Galaxy Watch · Allow background running · Turn off widget and notification |
 
 ---
 
-## 🔒 Privacy
+## 🔒 Privacy & security
 
-- 📱 Your Claude session is stored **only on your phone**.
-- 🌐 The app only talks to claude.ai, to read your usage.
-- 🚫 Backups never include your signed-in sessions.
+- 📱 Your Claude session is stored **only on your phone**, encrypted with a hardware-backed Android Keystore key (AES-256-GCM).
+- 🌐 The app only talks to `https://claude.ai`, to read your usage. Plain HTTP is blocked.
+- 🚫 Cloud backup and phone-to-phone transfer are disabled; the app's own backups never include your sessions.
+- 🔐 Optional app lock with fingerprint, face or PIN.
+- 🧾 Full 20-point security review: **[SECURITY.md](SECURITY.md)**.
 
 ---
 

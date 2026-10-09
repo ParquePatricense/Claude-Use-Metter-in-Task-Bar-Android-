@@ -81,8 +81,9 @@ public class MainActivity extends Activity {
                 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1);
         }
-        if (Prefs.cookie(this) == null) showLogin(false);
-        else if (getIntent().getBooleanExtra(EXTRA_RELOGIN, false)) relogin();
+        if (needsUnlock()) screen = SCREEN_LOCKED;   // onResume muestra el bloqueo antes que cualquier dato
+        else if (Prefs.cookie(this) == null) showLogin(false);
+        else if (getIntent().getBooleanExtra(EXTRA_RELOGIN, false)) confirmRelogin();
         else if (b != null && b.getInt("screen", SCREEN_MAIN) == SCREEN_SETTINGS) showSettings();
         else { shortcut(getIntent()); showMain(); }
     }
@@ -96,7 +97,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onNewIntent(Intent i) {
         super.onNewIntent(i);
-        if (i.getBooleanExtra(EXTRA_RELOGIN, false)) relogin();
+        if (i.getBooleanExtra(EXTRA_RELOGIN, false)) confirmRelogin();
         else if (shortcut(i)) showMain();
     }
 
@@ -115,7 +116,82 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (screen == SCREEN_MAIN) showMain();
+        if (needsUnlock()) { showLocked(); return; }
+        if (screen == SCREEN_MAIN || screen == SCREEN_LOCKED) render();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        leftAt = System.currentTimeMillis();
+    }
+
+    // ---------- Bloqueo con huella o PIN ----------
+
+    private static final int SCREEN_LOCKED = 3;
+    private static boolean unlocked;
+    private static long leftAt;
+
+    /** Se vuelve a pedir si la app estuvo más de 30 s en segundo plano. */
+    private boolean needsUnlock() {
+        if (!Prefs.get(this).getBoolean("appLock", false) || Build.VERSION.SDK_INT < 29) return false;
+        if (unlocked && leftAt > 0 && System.currentTimeMillis() - leftAt > 30_000) unlocked = false;
+        return !unlocked;
+    }
+
+    private void showLocked() {
+        screen = SCREEN_LOCKED;
+        handler.removeCallbacksAndMessages(null);
+        LinearLayout root = column();
+        root.setGravity(Gravity.CENTER);
+        root.setPadding(dp(32), dp(32), dp(32), dp(32));
+        TextView t = text(L.t("Claude Uso bloqueada"), 22, th.fg);
+        t.setGravity(Gravity.CENTER);
+        root.addView(t);
+        Button b = button(L.t("Desbloquear"));
+        b.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { askUnlock(); } });
+        root.addView(b, margins(0, 24, 0, 0));
+        setContentView(root);
+        askUnlock();
+    }
+
+    private void askUnlock() {
+        if (Build.VERSION.SDK_INT < 29) return;
+        android.hardware.biometrics.BiometricPrompt.Builder b = new android.hardware.biometrics.BiometricPrompt.Builder(this)
+                .setTitle(L.t("Claude Uso bloqueada"))
+                .setSubtitle(L.t("Desbloqueá para ver tu uso"));
+        if (Build.VERSION.SDK_INT >= 30) {
+            b.setAllowedAuthenticators(android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_WEAK
+                    | android.hardware.biometrics.BiometricManager.Authenticators.DEVICE_CREDENTIAL);
+        } else {
+            b.setDeviceCredentialAllowed(true);
+        }
+        b.build().authenticate(new android.os.CancellationSignal(), getMainExecutor(),
+                new android.hardware.biometrics.BiometricPrompt.AuthenticationCallback() {
+                    @Override
+                    public void onAuthenticationSucceeded(android.hardware.biometrics.BiometricPrompt.AuthenticationResult r) {
+                        unlocked = true;
+                        leftAt = 0;
+                        render();
+                    }
+                });
+    }
+
+    /** Muestra la pantalla que corresponde (después de desbloquear). */
+    private void render() {
+        if (Prefs.cookie(this) == null) showLogin(false);
+        else showMain();
+    }
+
+    /** Cerrar sesión pedido desde afuera (notificación): se confirma antes. */
+    private void confirmRelogin() {
+        new AlertDialog.Builder(this)
+                .setMessage(L.t("¿Volver a iniciar sesión? Se cierra la sesión actual en esta cuenta."))
+                .setPositiveButton(L.t("Iniciar sesión"), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface d, int w) { relogin(); }
+                })
+                .setNegativeButton(L.t("Cancelar"), null)
+                .show();
     }
 
     @Override
@@ -153,6 +229,9 @@ public class MainActivity extends Activity {
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);
+        s.setAllowFileAccess(false);
+        s.setAllowContentAccess(false);
+        if (Build.VERSION.SDK_INT >= 26) s.setSafeBrowsingEnabled(true);
         // Sin la marca "wv" para que Google permita el login
         s.setUserAgentString(s.getUserAgentString().replace("; wv", "").replaceAll("Version/\\S+ ", ""));
         CookieManager.getInstance().setAcceptCookie(true);
@@ -187,6 +266,11 @@ public class MainActivity extends Activity {
                         String k = in.getText().toString().trim();
                         if (k.startsWith("sessionKey=")) k = k.substring(11);
                         if (k.isEmpty()) return;
+                        // Solo letras, números, guion y guion bajo: evita pegar texto o código extraño
+                        if (!k.matches("[A-Za-z0-9_\\-]{20,400}")) {
+                            Toast.makeText(MainActivity.this, L.t("La sessionKey no tiene un formato válido."), Toast.LENGTH_LONG).show();
+                            return;
+                        }
                         loggedIn("sessionKey=" + k, null);
                     }
                 })
@@ -660,7 +744,11 @@ public class MainActivity extends Activity {
         }
         root.addView(text(L.t("El modo aparece en Ajustes → Notificaciones → No molestar, junto a tus otros modos. ")
                 + L.t("Si querés que Samsung haga algo más (por ejemplo, bajar el brillo), creá una rutina en Modos y rutinas con la condición \"No molestar activado\"."), 13, th.dim));
-        root.addView(toggle(L.t("Avisos para Tasker, MacroDroid y similares\nAcción: ") + Focus.EVENT + L.t(" · extra \"event\": level75, level90, limit o reset"), "broadcast", true));
+        root.addView(toggle(L.t("Avisos para Tasker, MacroDroid y similares\nAcción: ") + Focus.EVENT + L.t(" · extra \"event\": level75, level90, limit o reset"), "broadcast", false));
+
+        // Seguridad
+        section(root, L.t("Seguridad"));
+        root.addView(toggle(L.t("Bloquear la app con huella o PIN"), "appLock", false));
         int[] qw = History.quietWindow(this);
         root.addView(toggle(L.t("No molestar inteligente: avisos en silencio mientras dormís\n")
                 + (qw != null ? String.format(java.util.Locale.US, L.t("Detectado: %02d–%02d h"), qw[0], qw[1])
@@ -1098,6 +1186,7 @@ public class MainActivity extends Activity {
                 }
                 if ("autoSave".equals(key)) { refreshAll(); showSettings(); return; }
                 if ("vibePatterns".equals(key) || "broadcast".equals(key)) return;
+                if ("appLock".equals(key)) { if (on) { unlocked = true; leftAt = 0; } return; }
                 if ("smart".equals(key)) {
                     startForegroundService(new Intent(MainActivity.this, UsageService.class).setAction(UsageService.ACTION_REFRESH));
                 }

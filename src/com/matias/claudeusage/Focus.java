@@ -56,7 +56,7 @@ final class Focus {
 
     /** Aviso para apps de automatización: event = level75 | level90 | limit | reset. */
     static void broadcast(Context c, String event, int pct) {
-        if (!Prefs.get(c).getBoolean("broadcast", true)) return;
+        if (!Prefs.get(c).getBoolean("broadcast", false)) return;
         c.sendBroadcast(new Intent(EVENT).putExtra("event", event).putExtra("pct", pct));
     }
 }

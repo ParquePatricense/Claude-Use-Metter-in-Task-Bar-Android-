@@ -1,0 +1,8 @@
+add("Seguridad","Security","Sicurezza","Sécurité","Sicherheit","セキュリティ","安全")
+add("Bloquear la app con huella o PIN","Lock the app with fingerprint or PIN","Blocca l'app con impronta o PIN","Verrouiller l'app par empreinte ou code","App mit Fingerabdruck oder PIN sperren","指紋またはPINでアプリをロック","用指纹或PIN锁定应用")
+add("Claude Uso bloqueada","Claude Uso is locked","Claude Uso è bloccata","Claude Uso est verrouillée","Claude Uso ist gesperrt","Claude Usoはロック中","Claude Uso已锁定")
+add("Desbloqueá para ver tu uso","Unlock to see your usage","Sblocca per vedere il tuo utilizzo","Déverrouille pour voir ton utilisation","Entsperre, um deine Nutzung zu sehen","ロックを解除して使用量を表示","解锁以查看用量")
+add("Desbloquear","Unlock","Sblocca","Déverrouiller","Entsperren","ロック解除","解锁")
+add("¿Volver a iniciar sesión? Se cierra la sesión actual en esta cuenta.","Sign in again? The current session on this account will be closed.","Accedere di nuovo? La sessione attuale di questo account verrà chiusa.","Te reconnecter ? La session actuelle de ce compte sera fermée.","Erneut anmelden? Die aktuelle Sitzung dieses Kontos wird beendet.","再ログインしますか？このアカウントの現在のセッションは終了します。","重新登录？此账号的当前会话将被关闭。")
+add("La sessionKey no tiene un formato válido.","The sessionKey doesn't have a valid format.","La sessionKey non ha un formato valido.","La sessionKey n'a pas un format valide.","Der sessionKey hat kein gültiges Format.","sessionKeyの形式が正しくありません。","sessionKey格式无效。")
+add("el archivo es demasiado grande","the file is too large","il file è troppo grande","le fichier est trop volumineux","die Datei ist zu groß","ファイルが大きすぎます","文件过大")

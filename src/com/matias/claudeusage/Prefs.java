@@ -35,7 +35,7 @@ class Prefs {
         try {
             a.put("id", UUID.randomUUID().toString().substring(0, 8));
             a.put("name", name);
-            a.put("cookie", cookie);
+            a.put("cookie", Crypto.encrypt(cookie));
             if (ua != null) a.put("ua", ua);
         } catch (Exception ignored) {}
         return a;
@@ -55,7 +55,12 @@ class Prefs {
 
     static String cookie(Context c) {
         JSONObject a = active(c);
-        return a == null ? null : a.optString("cookie", null);
+        if (a == null || !a.has("cookie")) return null;
+        String stored = a.optString("cookie", null);
+        String plain = Crypto.decrypt(stored);
+        // Migración: si estaba sin cifrar, lo cifra la primera vez que se lee
+        if (plain != null && stored != null && !stored.startsWith("enc1:")) setActiveField(c, "cookie", plain);
+        return plain;
     }
 
     static String ua(Context c) {
@@ -69,6 +74,7 @@ class Prefs {
     }
 
     static void setActiveField(Context c, String key, String value) {
+        if ("cookie".equals(key)) value = Crypto.encrypt(value);
         JSONArray arr = accounts(c);
         int i = activeIndex(c);
         if (i >= arr.length()) return;
