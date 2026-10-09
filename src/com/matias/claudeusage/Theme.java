@@ -23,7 +23,8 @@ final class Theme {
 
     final boolean dark;
     int pal;
-    final int bg, card, fg, dim, track, accent, low, mid, high;
+    int bg, card;
+    final int fg, dim, track, accent, low, mid, high;
 
     /** Paleta en uso (la app y el servicio comparten proceso). */
     static volatile Theme cur = build(0, true);
@@ -110,6 +111,8 @@ final class Theme {
         boolean night = (c.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
                 == Configuration.UI_MODE_NIGHT_YES;
         Theme t = build(Prefs.get(c).getInt("palette", 0), m == 2 || (m == 0 && night));
+        // AMOLED: negro puro en modo oscuro (ahorra batería en pantallas OLED)
+        if (t.dark && Prefs.get(c).getBoolean("amoled", false)) { t.bg = Color.BLACK; t.card = Color.parseColor("#0E0E0E"); }
         load(c);
         cur = t;
         return t;

@@ -111,15 +111,20 @@ public class UsageService extends Service {
     /** Canales de aviso: normal, 8-bit (uno por sonido) y silencioso (horario de sueño). */
     static void channels(Context c) {
         NotificationManager nm = c.getSystemService(NotificationManager.class);
-        NotificationChannel al = new NotificationChannel(CH_ALERT, "Avisos de Claude", NotificationManager.IMPORTANCE_HIGH);
-        al.enableVibration(true);
-        nm.createNotificationChannel(al);
-        for (int i = 0; i < SFX_CH.length; i++) {
-            NotificationChannel s = new NotificationChannel(SFX_CH[i], SFX_NAME[i], NotificationManager.IMPORTANCE_HIGH);
-            s.setSound(android.net.Uri.parse("android.resource://" + c.getPackageName() + "/" + SFX_RES[i]),
-                    new android.media.AudioAttributes.Builder().setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION).build());
-            s.enableVibration(true);
-            nm.createNotificationChannel(s);
+        for (String suf : new String[]{"", "_nv"}) {
+            boolean vib = suf.isEmpty();
+            NotificationChannel al = new NotificationChannel(CH_ALERT + suf, "Avisos de Claude" + (vib ? "" : " (vibración propia)"), NotificationManager.IMPORTANCE_HIGH);
+            al.enableVibration(vib);
+            if (!vib) al.setVibrationPattern(new long[]{0});
+            nm.createNotificationChannel(al);
+            for (int i = 0; i < SFX_CH.length; i++) {
+                NotificationChannel s = new NotificationChannel(SFX_CH[i] + suf, SFX_NAME[i] + (vib ? "" : " (vibración propia)"), NotificationManager.IMPORTANCE_HIGH);
+                s.setSound(android.net.Uri.parse("android.resource://" + c.getPackageName() + "/" + SFX_RES[i]),
+                        new android.media.AudioAttributes.Builder().setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION).build());
+                s.enableVibration(vib);
+                if (!vib) s.setVibrationPattern(new long[]{0});
+                nm.createNotificationChannel(s);
+            }
         }
         NotificationChannel q = new NotificationChannel("alerts_quiet", "Avisos en horario de sueño", NotificationManager.IMPORTANCE_LOW);
         nm.createNotificationChannel(q);
@@ -127,8 +132,21 @@ public class UsageService extends Service {
 
     private static String channelFor(Context c, int kind) {
         if (kind != K_ACH && History.inQuiet(c)) return "alerts_quiet";
-        if (Prefs.get(c).getBoolean("sounds", true) && kind < SFX_CH.length) return SFX_CH[kind];
-        return CH_ALERT;
+        String suf = Prefs.get(c).getBoolean("vibePatterns", true) ? "_nv" : "";
+        if (Prefs.get(c).getBoolean("sounds", true) && kind < SFX_CH.length) return SFX_CH[kind] + suf;
+        return CH_ALERT + suf;
+    }
+
+    // Patrones para saber qué pasó sin mirar el teléfono
+    static final long[] VIB_75 = {0, 120, 120, 120}, VIB_90 = {0, 120, 100, 120, 100, 120}, VIB_100 = {0, 700},
+            VIB_RESET = {0, 80, 80, 300}, VIB_PRE = {0, 200}, VIB_ACH = {0, 60, 60, 60, 60, 200};
+
+    static void vibrate(Context c, long[] pattern) {
+        if (!Prefs.get(c).getBoolean("vibePatterns", true) || History.inQuiet(c)) return;
+        try {
+            android.os.Vibrator v = c.getSystemService(android.os.Vibrator.class);
+            v.vibrate(android.os.VibrationEffect.createWaveform(pattern, -1));
+        } catch (Exception ignored) {}
     }
 
     static void notifyAchievement(Context c, String title, String text) {
@@ -140,6 +158,7 @@ public class UsageService extends Service {
                 .setContentIntent(PendingIntent.getActivity(c, 6, new Intent(c, MainActivity.class), PendingIntent.FLAG_IMMUTABLE))
                 .build();
         c.getSystemService(NotificationManager.class).notify(100 + (int) (System.currentTimeMillis() % 1000), n);
+        vibrate(c, VIB_ACH);
     }
 
     @Override
@@ -299,6 +318,9 @@ public class UsageService extends Service {
             // La ventana anterior terminó: aviso de reinicio
             if (oldWin > 0 && now >= oldWin * 600000 - 15 * MIN && old.pct > 0) {
                 alert(ID_RESET, "Sesión de Claude reiniciada", "Volviste a 0%. Semana " + n.week + "%", false, K_COIN);
+                vibrate(this, VIB_RESET);
+                Focus.off(this);
+                Focus.broadcast(this, "reset", n.pct);
                 p.edit().putLong("lastReset", now).apply();
             }
             lvl = 0;
@@ -310,6 +332,9 @@ public class UsageService extends Service {
                     ? "Llegaste al límite. " + n.resetLine()
                     : "Te queda " + (100 - n.pct) + "% · " + n.resetLine();
             alert(ID_LEVEL, "Claude al " + n.pct + "%", txt, false, hit == 100 ? K_OVER : K_WARN);
+            vibrate(this, hit == 100 ? VIB_100 : hit == 90 ? VIB_90 : VIB_75);
+            Focus.broadcast(this, hit == 100 ? "limit" : "level" + hit, n.pct);
+            if (hit >= p.getInt("focusAt", 100)) Focus.on(this, "Llegaste al " + n.pct + "% de tu sesión de Claude");
             lvl = hit;
         }
         // Aviso 5 min antes del reinicio
@@ -317,6 +342,7 @@ public class UsageService extends Service {
                 && n.reset - now <= 5 * MIN && n.reset > now && p.getLong("preWin", 0) != win) {
             long m = Math.max(1, (n.reset - now + 30 * SEC) / MIN);
             alert(ID_PRE, "En " + m + " min se reinicia tu sesión", "A las " + Usage.clock(n.reset) + " volvés a 0%", false, K_COIN);
+            vibrate(this, VIB_PRE);
             p.edit().putLong("preWin", win).apply();
         }
         p.edit().putLong("alertWin", win).putInt("alertLvl", lvl).apply();

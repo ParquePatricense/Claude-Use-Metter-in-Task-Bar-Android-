@@ -39,7 +39,7 @@ class BgView extends View {
 
     @Override
     protected void onDraw(Canvas c) {
-        if (kind == 0) return;
+        if (kind == 0 || Power.saving(getContext())) return;
         long now = SystemClock.uptimeMillis();
         float dt = last == 0 ? 0 : Math.min(0.05f, (now - last) / 1000f);
         last = now;

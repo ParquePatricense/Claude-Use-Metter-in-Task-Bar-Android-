@@ -34,7 +34,7 @@ class CrtView extends View {
         float step = 3 * d;
         for (float y = 0; y < h; y += step) c.drawRect(0, y, w, y + d, line);
         c.drawRect(0, 0, w, h, vig);
-        if (Prefs.get(getContext()).getBoolean("anim", true)) {
+        if (Prefs.get(getContext()).getBoolean("anim", true) && !Power.saving(getContext())) {
             long t = SystemClock.uptimeMillis();
             // Banda de barrido que baja lento
             float by = (t % 6000) / 6000f * (h + 120 * d) - 60 * d;

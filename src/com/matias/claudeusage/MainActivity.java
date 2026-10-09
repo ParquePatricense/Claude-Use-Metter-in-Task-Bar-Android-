@@ -560,6 +560,7 @@ public class MainActivity extends Activity {
             }
         });
         root.addView(tg);
+        root.addView(toggle("Negro puro AMOLED en modo oscuro (ahorra batería)", "amoled", false));
 
         // Apariencia
         section(root, "Apariencia");
@@ -641,6 +642,25 @@ public class MainActivity extends Activity {
                 "smart", true));
         root.addView(toggle("Avisar 5 min antes del reinicio de la sesión", "preReset", true));
         root.addView(toggle("Resumen semanal los lunes", "weekly", true));
+        root.addView(toggle("Vibraciones con patrón\n75%: 2 cortas · 90%: 3 cortas · 100%: 1 larga · reinicio: corta + larga", "vibePatterns", true));
+        root.addView(toggle("Modo ahorro automático\nCon menos de 20% de batería (sin cargar) o con el ahorro de energía activo: 30 FPS, sin fondo animado y widget quieto"
+                + (Power.saving(this) ? "\nAhora: ACTIVO" : ""), "autoSave", true));
+
+        // Modos del teléfono y automatización
+        section(root, "Modos y automatización");
+        root.addView(toggle("Modo \"Concentración Claude\": activa No molestar al llegar al límite y lo apaga solo al reiniciarse la sesión", "focusMode", false));
+        root.addView(text("Activar al llegar al", 15, th.fg), margins(0, 8, 0, 0));
+        root.addView(choiceList(new String[]{"90%", "100%"}, "focusAtIdx", 7400, false));
+        if (!Focus.hasAccess(this)) {
+            Button perm = button("Dar permiso de No molestar");
+            perm.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) { startActivity(new Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)); }
+            });
+            root.addView(perm);
+        }
+        root.addView(text("El modo aparece en Ajustes → Notificaciones → No molestar, junto a tus otros modos. "
+                + "Si querés que Samsung haga algo más (por ejemplo, bajar el brillo), creá una rutina en Modos y rutinas con la condición \"No molestar activado\".", 13, th.dim));
+        root.addView(toggle("Avisos para Tasker, MacroDroid y similares\nAcción: " + Focus.EVENT + " · extra \"event\": level75, level90, limit o reset", "broadcast", true));
         int[] qw = History.quietWindow(this);
         root.addView(toggle("No molestar inteligente: avisos en silencio mientras dormís\n"
                 + (qw != null ? String.format(java.util.Locale.US, "Detectado: %02d–%02d h", qw[0], qw[1])
@@ -881,6 +901,7 @@ public class MainActivity extends Activity {
         g.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             public void onCheckedChanged(RadioGroup gr, int id) {
                 Prefs.get(MainActivity.this).edit().putInt(key, id - base).apply();
+                if ("focusAtIdx".equals(key)) Prefs.get(MainActivity.this).edit().putInt("focusAt", id - base == 0 ? 90 : 100).apply();
                 WidgetProvider.update(MainActivity.this);
             }
         });
@@ -1069,6 +1090,14 @@ public class MainActivity extends Activity {
                     startForegroundService(new Intent(MainActivity.this, UsageService.class));
                     return;
                 }
+                if ("amoled".equals(key)) { refreshAll(); recreate(); return; }
+                if ("focusMode".equals(key)) {
+                    if (on && !Focus.hasAccess(MainActivity.this)) startActivity(new Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS));
+                    if (!on) Focus.off(MainActivity.this);
+                    return;
+                }
+                if ("autoSave".equals(key)) { refreshAll(); showSettings(); return; }
+                if ("vibePatterns".equals(key) || "broadcast".equals(key)) return;
                 if ("smart".equals(key)) {
                     startForegroundService(new Intent(MainActivity.this, UsageService.class).setAction(UsageService.ACTION_REFRESH));
                 }

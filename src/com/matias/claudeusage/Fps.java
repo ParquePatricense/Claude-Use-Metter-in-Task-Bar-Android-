@@ -40,6 +40,7 @@ final class Fps {
 
     /** FPS del widget: lo elegido (automático = tasa de la pantalla). */
     static int widget(Context c) {
+        if (Power.saving(c)) return 0;
         int f = Prefs.get(c).getInt("wFps2", 60);
         return f == 0 ? maxRefresh(c) : f;
     }
@@ -47,6 +48,7 @@ final class Fps {
     /** Pide el próximo cuadro respetando el límite elegido. */
     static void next(View v) {
         int f = Prefs.get(v.getContext()).getInt("appFps", 0);
+        if (Power.saving(v.getContext())) { v.postInvalidateDelayed(33); return; }
         if (f == 0 || f >= maxRefreshCached(v.getContext())) v.postInvalidateOnAnimation();
         else v.postInvalidateDelayed(Math.max(1, 1000 / f));
     }
