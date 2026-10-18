@@ -42,7 +42,7 @@ public class UsageService extends Service {
     private static final String CHANNEL = "usage";
     private static final String CH_ALERT = "alerts";
     private static final int NOTIF_ID = 1;
-    private static final int ID_LEVEL = 2, ID_RESET = 3, ID_EXPIRED = 4, ID_PRE = 5, ID_SUMMARY = 6, ID_OVER = 7, ID_TODO = 8;
+    private static final int ID_LEVEL = 2, ID_RESET = 3, ID_EXPIRED = 4, ID_PRE = 5, ID_SUMMARY = 6, ID_OVER = 7;
     private static final long SEC = 1000, MIN = 60 * SEC;
     private static final String HOME = "https://claude.ai/api/organizations";
 
@@ -89,7 +89,6 @@ public class UsageService extends Service {
         NotificationManager nm = getSystemService(NotificationManager.class);
         nm.createNotificationChannel(ch);
         channels(this);
-        Reminders.schedule(this);
 
         registerReceiver(screenOn, new IntentFilter(Intent.ACTION_SCREEN_ON));
         // Vuelve internet: reintenta si el último intento falló
@@ -129,11 +128,9 @@ public class UsageService extends Service {
         }
         NotificationChannel q = new NotificationChannel("alerts_quiet", L.t("Avisos en horario de sueño"), NotificationManager.IMPORTANCE_LOW);
         nm.createNotificationChannel(q);
-        // Un solo canal para los recordatorios (tiempo libre y pendientes)
-        nm.createNotificationChannel(new NotificationChannel("reminders", L.t("Recordatorios"), NotificationManager.IMPORTANCE_DEFAULT));
+        // Canal de la 1.1 que ya no se usa
+        nm.deleteNotificationChannel("reminders");
     }
-
-    static String reminderChannel(Context c) { return History.inQuiet(c) ? "alerts_quiet" : "reminders"; }
 
     private static String channelFor(Context c, int kind) {
         if (kind != K_ACH && History.inQuiet(c)) return "alerts_quiet";
@@ -351,7 +348,6 @@ public class UsageService extends Service {
                 p.edit().putLong("lastReset", now).apply();
             }
             lvl = 0;
-            p.edit().remove("todoWin").apply();
             if (win > 0) p.edit().putInt("winCount", p.getInt("winCount", 0) + 1).apply();
         }
         int hit = n.pct >= 100 ? 100 : n.pct >= 90 ? 90 : n.pct >= 75 ? 75 : 0;
@@ -378,29 +374,8 @@ public class UsageService extends Service {
             alert(ID_RESET, L.t("Volvió tu semana de Claude"), welcome, false, K_COIN);
             vibrate(this, VIB_RESET);
         }
-        todoReminder(n, now);
         overuse(n, now);
         p.edit().putLong("alertWin", win).putInt("alertLvl", lvl).apply();
-    }
-
-    /** 15 min antes de que vuelva el límite (sesión o semana), si hay pendientes abiertos. */
-    private void todoReminder(Usage n, long now) {
-        SharedPreferences p = Prefs.get(this);
-        long target = n.weekOut() ? n.weekReset : n.pct >= 75 ? n.reset : 0;
-        if (target <= now || target - now > 15 * MIN) return;
-        long key = target / 600000;
-        if (p.getLong("todoWin", 0) == key) return;
-        int open = Todos.open(this);
-        if (open == 0) return;
-        p.edit().putLong("todoWin", key).apply();
-        String text = open + L.t(" pendientes: ") + Todos.tags(this) + "\n" + Todos.top(this, 3);
-        Notification nt = new Notification.Builder(this, reminderChannel(this))
-                .setSmallIcon(R.drawable.ic_stat)
-                .setContentTitle((n.weekOut() ? L.t("Tu semana vuelve a las ") : L.t("Tu sesión vuelve a las ")) + Usage.clock(target))
-                .setContentText(text).setStyle(new Notification.BigTextStyle().bigText(text))
-                .setColor(Theme.widget(this).accent).setAutoCancel(true)
-                .setVisibility(Notification.VISIBILITY_PUBLIC).setContentIntent(openApp(false)).build();
-        getSystemService(NotificationManager.class).notify(ID_TODO, nt);
     }
 
     /** Primer día después del reinicio semanal: avisa si vas mucho más rápido que tus semanas anteriores. */

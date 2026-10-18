@@ -44,7 +44,8 @@ public class WidgetProvider extends AppWidgetProvider {
         // Sin cambios visibles: no reenvía (ahorra batería; el launcher sigue animando solo)
         Usage u = Usage.load(c);
         String key = visualKey(c, u, fps) + "/" + u.resetLine() + "/" + u.weekLine() + "/" + u.error + "/"
-                + pp.getInt("wAlpha", 90) + "/" + pp.getInt("wTap", 0) + "/" + pp.getBoolean("wMinimal", false);
+                + pp.getInt("wAlpha", 90) + "/" + pp.getInt("wTap", 0) + "/" + pp.getBoolean("wMinimal", false)
+                + "/" + u.dataState();   // el estado de datos, no la hora: así no redibuja cada minuto
         long now = System.currentTimeMillis();
         if (key.equals(lastKey) && now - lastPush < 10 * 60_000) return;
         lastKey = key;
@@ -129,6 +130,13 @@ public class WidgetProvider extends AppWidgetProvider {
 
     private static boolean ghost(Usage u) { return u.weekOut(); }
 
+    /** "● Actualizado 14:32" con el punto del color de frescura. */
+    private static CharSequence fresh(Usage u) {
+        android.text.SpannableString s = new android.text.SpannableString("● " + L.t("Actualizado ") + Usage.clock(u.updated));
+        s.setSpan(new android.text.style.ForegroundColorSpan(Usage.stateColor(u.dataState())), 0, 1, 0);
+        return s;
+    }
+
     // Los layouts que no tienen un id ignoran ese dato
     private static RemoteViews fill(Context c, Theme t, int layout, Usage u, List<Bitmap> fr, int interval,
                                     Bitmap sbar, Bitmap wbar, Bitmap chart) {
@@ -150,7 +158,7 @@ public class WidgetProvider extends AppWidgetProvider {
         v.setTextViewText(R.id.w_left, !ok ? "–" : ghost && u.weekReset > 0 ? "↻ " + Usage.left(u.weekReset) : u.reset > 0 ? "↻ " + Usage.left(u.reset) : L.t("Libre"));
         v.setTextViewText(R.id.w_week, !ok ? L.t("Abrí la app") : ghost ? u.availLine() : u.weekLine());
         v.setTextViewText(R.id.w_wshort, ok ? L.t("Semana ") + u.week + "%" : "");
-        v.setTextViewText(R.id.w_upd, u.updated > 0 ? L.t("Actualizado ") + Usage.clock(u.updated) : "");
+        v.setTextViewText(R.id.w_upd, u.updated > 0 ? fresh(u) : "");
         for (int id : TEXTS) v.setTextColor(id, ghost ? t.dim : t.fg);
         for (int id : DIMS) v.setTextColor(id, t.dim);
         if (layout == R.layout.widget_2x2 || layout == R.layout.widget_3x2

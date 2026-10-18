@@ -18,6 +18,17 @@ class Prefs {
     /** Pasa la cuenta única de versiones anteriores a la lista de cuentas. */
     static void migrate(Context c) {
         SharedPreferences p = get(c);
+        // 1.2: limpia pendientes y tiempo libre de la 1.1
+        if (p.contains("todos") || p.contains("freeOn")) {
+            SharedPreferences.Editor e = p.edit();
+            for (String k : new String[]{"todos", "freeOn", "freeStart", "freeEnd", "freeDay", "todoWin", "lastTag"}) e.remove(k);
+            e.apply();
+            try {
+                android.app.AlarmManager am = c.getSystemService(android.app.AlarmManager.class);
+                am.cancel(android.app.PendingIntent.getBroadcast(c, 11, new android.content.Intent().setClassName(c, "com.matias.claudeusage.Reminders"),
+                        android.app.PendingIntent.FLAG_IMMUTABLE | android.app.PendingIntent.FLAG_UPDATE_CURRENT));
+            } catch (Exception ignored) {}
+        }
         if (p.contains("accounts")) return;
         JSONArray arr = new JSONArray();
         String cookie = p.getString("cookie", null);
@@ -108,7 +119,7 @@ class Prefs {
     static void resetLive(Context c) {
         SharedPreferences.Editor e = get(c).edit();
         for (String k : new String[]{"pct", "week", "reset", "weekReset", "updated", "error", "extra",
-                "alertWin", "alertLvl", "preWin", "expired", "lastChange", "todoWin", "overWeek"}) e.remove(k);
+                "alertWin", "alertLvl", "preWin", "expired", "lastChange", "overWeek"}) e.remove(k);
         e.apply();
     }
 }

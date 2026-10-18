@@ -115,6 +115,35 @@ final class Usage {
         return s;
     }
 
+    // Estado de los datos (lo comparten la app, el widget y la línea de sincronización)
+    static final int FRESH = 0, AGING = 1, STALE = 2, ERR = 3;
+    static final long STALE_MS = 3_600_000L;
+
+    int dataState() {
+        if (error != null) return ERR;
+        long age = System.currentTimeMillis() - updated;
+        if (updated <= 0 || age >= STALE_MS) return STALE;
+        return age >= 600_000L ? AGING : FRESH;
+    }
+
+    static int stateColor(int s) {
+        return s == FRESH ? 0xFF43A047 : s == AGING ? 0xFFFFB300 : 0xFFE53935;
+    }
+
+    /** "Sincronización OK · 14:32" o "Error de sincronización · último dato 14:32". */
+    String syncLine() {
+        if (updated <= 0) return error != null ? L.t("Error de sincronización") : L.t("Conectando…");
+        return error != null ? L.t("Error de sincronización · último dato ") + clock(updated) : L.t("Sincronización OK · ") + clock(updated);
+    }
+
+    /** Duración corta: 2h 10m, 3d 4h, 25m. */
+    static String dur(long ms) {
+        long m = Math.max(0, ms / 60000);
+        if (m >= 1440) return (m / 1440) + "d " + (m % 1440 / 60) + "h";
+        if (m >= 60) return (m / 60) + "h " + (m % 60) + "m";
+        return m + "m";
+    }
+
     /** Cuenta regresiva con segundos: 4h 57m 12s. */
     static String leftSec(long t) {
         long s = Math.max(0, (t - System.currentTimeMillis()) / 1000);

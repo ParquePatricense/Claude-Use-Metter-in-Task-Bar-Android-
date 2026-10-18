@@ -1,0 +1,11 @@
+# --- 1.2: menú con desplegables, estado de datos y barras de tiempo ---
+add("Gráfico","Chart","Grafico","Graphique","Diagramm","グラフ","图表")
+add("Estadísticas","Stats","Statistiche","Statistiques","Statistiken","統計","统计")
+add("Mapa de uso","Usage map","Mappa di utilizzo","Carte d'utilisation","Nutzungskarte","使用マップ","用量热图")
+add("Ventana de 5 h","5-hour window","Finestra di 5 h","Fenêtre de 5 h","5-Stunden-Fenster","5時間枠","5小时窗口")
+add("Semana de 7 días","7-day week","Settimana di 7 giorni","Semaine de 7 jours","7-Tage-Woche","7日間","7天周期")
+add("Sin datos nuevos hace ","No new data for ","Nessun dato nuovo da ","Pas de nouvelles données depuis ","Keine neuen Daten seit ","新しいデータなし: ","已无新数据：")
+add(" (hace "," ("," ("," (il y a "," (vor "," ("," （")
+add("Error de sincronización","Sync error","Errore di sincronizzazione","Erreur de synchronisation","Synchronisierungsfehler","同期エラー","同步错误")
+add("Error de sincronización · último dato ","Sync error · last data ","Errore di sincronizzazione · ultimo dato ","Erreur de synchronisation · dernière donnée ","Synchronisierungsfehler · letzte Daten ","同期エラー · 最終データ ","同步错误 · 最后数据 ")
+add("Sincronización OK · ","Sync OK · ","Sincronizzazione OK · ","Synchronisation OK · ","Synchronisierung OK · ","同期OK · ","同步正常 · ")

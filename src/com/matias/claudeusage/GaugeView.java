@@ -139,6 +139,7 @@ class GaugeView extends View {
             p.setTypeface(Theme.font(true));
             p.setTextSize(16 * d);
             String wk = L.t("Semana ") + (u.week < 0 ? "–" : u.week + "%");
+            if (u.week >= 0) p.setColor(th.level(u.week));
             fit(p, wk, (x1 - x0) * 0.55f, 16 * d);
             float wkW = p.measureText(wk);
             c.drawText(wk, x0, y, p);

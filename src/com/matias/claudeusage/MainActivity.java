@@ -349,12 +349,12 @@ public class MainActivity extends Activity {
         handler.removeCallbacksAndMessages(null);
         final SharedPreferences p = Prefs.get(this);
         final boolean zen = p.getBoolean("zen", false);
-        freeCard = null;
-        todoBody = null;
 
         FrameLayout frame = new FrameLayout(this);
         frame.setBackgroundColor(th.bg);
         frame.addView(new BgView(this, p.getInt("bg", 0), th), matchParent());
+        final View tint = new View(this);
+        frame.addView(tint, matchParent());
         ScrollView scroll = new ScrollView(this);
         scroll.setFillViewport(true);
         frame.addView(scroll);
@@ -370,15 +370,39 @@ public class MainActivity extends Activity {
 
         final MascotView mascot = new MascotView(this);
         boolean showMascot = p.getBoolean("mascot", true) && p.getInt("meter", 0) != 3;
-        if (!zen) {
-            TextView acc = text(accountName(), 13, th.dim);
-            acc.setGravity(Gravity.CENTER);
-            root.addView(acc);
-            if (showMascot) root.addView(mascot, margins(0, 8, 0, 4));
-        }
+        // Arriba: ♻️ actualizar · cuenta · ⚙️ ajustes
+        LinearLayout head = new LinearLayout(this);
+        head.setGravity(Gravity.CENTER_VERTICAL);
+        TextView refresh = iconButton("♻️", L.t("Actualizar ahora"));
+        refresh.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                startForegroundService(new Intent(MainActivity.this, UsageService.class).setAction(UsageService.ACTION_REFRESH));
+                Toast.makeText(MainActivity.this, L.t("Actualizando…"), Toast.LENGTH_SHORT).show();
+            }
+        });
+        head.addView(refresh);
+        TextView acc = text(zen ? "" : accountName(), 13, th.dim);
+        acc.setGravity(Gravity.CENTER);
+        head.addView(acc, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+        TextView gear = iconButton("⚙️", L.t("Ajustes"));
+        gear.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { showSettings(); } });
+        head.addView(gear);
+        root.addView(head);
+        final TextView banner = card();
+        banner.setGravity(Gravity.CENTER);
+        banner.setVisibility(View.GONE);
+        root.addView(banner, margins(0, 8, 0, 0));
+        if (!zen && showMascot) root.addView(mascot, margins(0, 8, 0, 4));
         final GaugeView gauge = new GaugeView(this);
         gauge.setZen(zen);
         root.addView(gauge);
+        final TimeBarView sBar = new TimeBarView(this), wBar = new TimeBarView(this);
+        sBar.setVisibility(View.GONE);
+        wBar.setVisibility(View.GONE);
+        if (!zen) {
+            root.addView(sBar, margins(0, 6, 0, 0));
+            root.addView(wBar, margins(0, 2, 0, 0));
+        }
         final TextView extra = text("", 14, th.dim);
         extra.setGravity(Gravity.CENTER);
         final ChartView chart = new ChartView(this);
@@ -395,47 +419,28 @@ public class MainActivity extends Activity {
             });
             root.addView(exit, margins(40, 24, 40, 0));
         } else {
-            root.addView(extra);
-            root.addView(predict, margins(0, 6, 0, 0));
-            Button enough = button(L.t("¿Me alcanza?"));
-            enough.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { askEnough(); } });
-            root.addView(enough, margins(0, 12, 0, 0));
-
-            // Tiempo libre y pendientes (todo en esta pantalla)
-            if (p.getBoolean("freeOn", false)) {
-                TextView ft = text(Reminders.inFree(this) ? L.t("Ahora: tu tiempo libre") : L.t("Esta noche"), 15, th.accent);
-                ft.setTypeface(Theme.font(true));
-                root.addView(ft, margins(0, 16, 0, 4));
-                freeCard = card();
-                root.addView(freeCard);
-            } else {
-                freeCard = null;
-            }
-            todoBody = collapsible(root, "todos", L.t("Pendientes"), false);
-            fillTodos();
-
+            root.addView(extra, margins(0, 6, 0, 0));
+            // Cada tema en su desplegable (recuerda si estaba abierto)
+            LinearLayout cChart = collapsible(root, "m_chart", L.t("Gráfico"), true);
             LinearLayout tabs = new LinearLayout(this);
             tabs.setGravity(Gravity.CENTER);
             tabs.addView(t24);
             tabs.addView(t7);
-            root.addView(tabs, margins(0, 16, 0, 0));
-            root.addView(chart, margins(0, 4, 0, 0));
-            root.addView(stats, margins(0, 16, 0, 0));
-            root.addView(daily, margins(0, 12, 0, 0));
-            root.addView(heat, margins(0, 16, 0, 0));
+            cChart.addView(tabs);
+            cChart.addView(chart, margins(0, 4, 0, 0));
+            LinearLayout cEnough = collapsible(root, "m_enough", L.t("¿Me alcanza?"), false);
+            cEnough.addView(predict, margins(0, 4, 0, 0));
+            Button enough = button(L.t("¿Me alcanza?"));
+            enough.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { askEnough(); } });
+            cEnough.addView(enough, margins(0, 8, 0, 0));
+            LinearLayout cStats = collapsible(root, "m_stats", L.t("Estadísticas"), false);
+            cStats.addView(stats, margins(0, 4, 0, 0));
+            cStats.addView(daily, margins(0, 12, 0, 0));
+            LinearLayout cHeat = collapsible(root, "m_heat", L.t("Mapa de uso"), false);
+            cHeat.addView(heat, margins(0, 4, 0, 0));
             st.setGravity(Gravity.CENTER);
             st.setPadding(0, dp(16), 0, dp(12));
             root.addView(st);
-            Button refresh = button(L.t("Actualizar ahora"));
-            refresh.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    startForegroundService(new Intent(MainActivity.this, UsageService.class).setAction(UsageService.ACTION_REFRESH));
-                }
-            });
-            root.addView(refresh);
-            Button settings = button(L.t("Ajustes"));
-            settings.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { showSettings(); } });
-            root.addView(settings);
         }
         setScreen(frame);
 
@@ -448,8 +453,7 @@ public class MainActivity extends Activity {
                 t7.setAlpha(chartSpan == History.DAY ? 0.5f : 1f);
                 fillStats(stats, daily, History.stats(pts, 7), History.stats(pts, 7, 7));
                 heat.set(History.heatmap(pts), th);
-                predict.setText(History.prediction(MainActivity.this, Usage.load(MainActivity.this)));
-                if (freeCard != null) freeCard.setText(Reminders.summary(MainActivity.this));
+                predict.setText(hi(History.prediction(MainActivity.this, Usage.load(MainActivity.this))));
             }
         };
         t24.setOnClickListener(new View.OnClickListener() {
@@ -461,19 +465,46 @@ public class MainActivity extends Activity {
 
         handler.post(new Runnable() {
             long shown = -1;
+            int tintLvl = -2;
             public void run() {
                 Usage u = Usage.load(MainActivity.this);
+                long now = System.currentTimeMillis();
                 gauge.set(u, th);
+                // Fondo con el color del nivel (solo cambia al pasar de tramo)
+                int lvl = !u.hasData() ? -1 : u.pct >= 100 ? 100 : u.pct >= 90 ? 90 : u.pct >= 75 ? 75 : 0;
+                if (lvl != tintLvl) {
+                    tintLvl = lvl;
+                    tint.setBackgroundColor(lvl < 0 ? Color.TRANSPARENT : Art.fade(th.level(lvl), lvl >= 90 ? 46 : 28));
+                }
+                // Barras de tiempo: ventana de 5 h y semana de 7 días
+                if (u.hasData() && u.reset > now) {
+                    long len = 5 * 3_600_000L;
+                    sBar.set(L.t("Ventana de 5 h"), Usage.dur(len - (u.reset - now)) + " / 5h", 1f - (u.reset - now) / (float) len, th);
+                } else sBar.setVisibility(View.GONE);
+                if (u.hasData() && u.weekReset > now) {
+                    long len = 7 * History.DAY;
+                    wBar.set(L.t("Semana de 7 días"), Usage.dur(len - (u.weekReset - now)) + " / 7d", 1f - (u.weekReset - now) / (float) len, th);
+                } else wBar.setVisibility(View.GONE);
+                // Datos viejos: aviso arriba
+                int ds = u.dataState();
+                if (u.updated > 0 && (ds == Usage.STALE || ds == Usage.ERR && now - u.updated >= Usage.STALE_MS)) {
+                    banner.setText(L.t("Sin datos nuevos hace ") + ago(now - u.updated));
+                    banner.setTextColor(Usage.stateColor(Usage.STALE));
+                    banner.setVisibility(View.VISIBLE);
+                } else banner.setVisibility(View.GONE);
                 mascot.set(u.hasData() ? u.pct : -1, th);
                 String ex = u.weekOut() ? u.availLine() + (u.extra != null ? "\n" + u.extra : "") : u.extra;
-                extra.setText(ex != null ? ex : "");
+                extra.setText(ex != null ? hi(ex) : "");
                 extra.setVisibility(ex != null ? View.VISIBLE : View.GONE);
                 if (u.updated != shown && !zen) { shown = u.updated; reloadChart[0].run(); }
-                String upd = u.updated > 0
-                        ? L.t("Actualizado hace ") + ago(System.currentTimeMillis() - u.updated)
-                        + (p.getBoolean("smart", true) ? L.t(" · intervalo inteligente") : L.t(" · cada 30 s"))
-                        : L.t("Conectando…");
-                st.setText(u.error != null ? upd + L.t("\nÚltimo error: ") + u.error : upd);
+                // Línea de sincronización con punto de frescura (reemplaza "Actualizado hace…")
+                android.text.SpannableStringBuilder sync = new android.text.SpannableStringBuilder("● ");
+                sync.setSpan(new android.text.style.ForegroundColorSpan(Usage.stateColor(ds)), 0, 1, 0);
+                sync.append(u.syncLine());
+                if (u.updated > 0) sync.append(L.t(" (hace ")).append(ago(now - u.updated)).append(")");
+                sync.append(p.getBoolean("smart", true) ? L.t(" · intervalo inteligente") : L.t(" · cada 30 s"));
+                if (u.error != null) sync.append(L.t("\nÚltimo error: ")).append(u.error);
+                st.setText(sync);
                 // Confeti si la sesión se reinició hace poco
                 long lr = p.getLong("lastReset", 0);
                 if (p.getBoolean("confetti", true) && p.getBoolean("anim", true) && lr > p.getLong("confettiShown", 0)
@@ -485,110 +516,6 @@ public class MainActivity extends Activity {
                 handler.postDelayed(this, 1000);
             }
         });
-    }
-
-    private TextView freeCard;
-    private LinearLayout todoBody;
-
-    /** Lista de pendientes: tocar marca hecho, mantener apretado borra. */
-    private void fillTodos() {
-        if (todoBody == null) return;
-        todoBody.removeAllViews();
-        final JSONArray a = Todos.load(this);
-        int open = Todos.open(this);
-        ((TextView) todoBody.getTag()).setText(L.t("Pendientes") + (open > 0 ? " (" + open + ")" : ""));
-        String tags = Todos.tags(this);
-        if (!tags.isEmpty()) todoBody.addView(text(tags, 13, th.dim));
-        if (a.length() == 0) todoBody.addView(text(L.t("Anotá lo que querés hacer cuando vuelva el límite."), 14, th.dim));
-        boolean anyDone = false;
-        for (int i = 0; i < a.length(); i++) {
-            final int idx = i;
-            org.json.JSONObject o = a.optJSONObject(i);
-            boolean done = o.optBoolean("d");
-            anyDone |= done;
-            android.widget.CheckBox cb = new android.widget.CheckBox(this);
-            cb.setText(Todos.label(o));
-            cb.setTextColor(done ? th.dim : th.fg);
-            cb.setTextSize(15);
-            cb.setTypeface(Theme.font(false));
-            cb.setButtonTintList(tints());
-            cb.setChecked(done);
-            if (done) cb.setPaintFlags(cb.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
-            cb.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) { Todos.toggle(MainActivity.this, idx); todosChanged(); }
-            });
-            cb.setOnLongClickListener(new View.OnLongClickListener() {
-                public boolean onLongClick(View v) {
-                    new AlertDialog.Builder(MainActivity.this).setMessage(L.t("¿Borrar este pendiente?"))
-                            .setPositiveButton(L.t("Borrar"), new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface d, int w) { Todos.remove(MainActivity.this, idx); todosChanged(); }
-                            }).setNegativeButton(L.t("Cancelar"), null).show();
-                    return true;
-                }
-            });
-            todoBody.addView(cb);
-        }
-        Button add = button(L.t("Agregar pendiente"));
-        add.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { askTodo(); } });
-        todoBody.addView(add, margins(0, 6, 0, 0));
-        if (anyDone) {
-            Button clear = button(L.t("Borrar los hechos"));
-            clear.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    JSONArray in = Todos.load(MainActivity.this), out = new JSONArray();
-                    for (int k = 0; k < in.length(); k++) if (!in.optJSONObject(k).optBoolean("d")) out.put(in.opt(k));
-                    Todos.save(MainActivity.this, out);
-                    todosChanged();
-                }
-            });
-            todoBody.addView(clear);
-        }
-    }
-
-    private void todosChanged() {
-        fillTodos();
-        if (freeCard != null) freeCard.setText(Reminders.summary(this));
-    }
-
-    private void askTodo() {
-        LinearLayout box = column();
-        box.setBackgroundColor(Color.TRANSPARENT);
-        box.setPadding(dp(20), dp(8), dp(20), 0);
-        final EditText what = new EditText(this);
-        what.setHint(L.t("Qué querés hacer"));
-        what.setFilters(new android.text.InputFilter[]{new android.text.InputFilter.LengthFilter(Todos.MAX_TEXT)});
-        final EditText tag = new EditText(this);
-        tag.setHint(L.t("Etiqueta (mod, Belka, personal…)"));
-        tag.setSingleLine(true);
-        tag.setFilters(new android.text.InputFilter[]{new android.text.InputFilter.LengthFilter(Todos.MAX_TAG)});
-        tag.setText(Prefs.get(this).getString("lastTag", ""));
-        box.addView(what);
-        box.addView(tag);
-        new AlertDialog.Builder(this).setTitle(L.t("Nuevo pendiente")).setView(box)
-                .setPositiveButton(L.t("Agregar"), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface d, int w) {
-                        String g = tag.getText().toString().trim();
-                        if (Todos.add(MainActivity.this, what.getText().toString(), g)) {
-                            Prefs.get(MainActivity.this).edit().putString("lastTag", g).apply();
-                            openState.put("todos", true);
-                            todosChanged();
-                        }
-                    }
-                }).setNegativeButton(L.t("Cancelar"), null).show();
-    }
-
-    /** Elegir una hora (0–23) para la franja libre. */
-    private void askHour(final String key, int def) {
-        String[] hs = new String[24];
-        for (int i = 0; i < 24; i++) hs[i] = String.format(Locale.US, "%02d:00", i);
-        new AlertDialog.Builder(this).setSingleChoiceItems(hs, Prefs.get(this).getInt(key, def), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface d, int w) {
-                Prefs.get(MainActivity.this).edit().putInt(key, w).apply();
-                Reminders.schedule(MainActivity.this);
-                d.dismiss();
-                showSettings();
-            }
-        }).show();
     }
 
     /** ¿Me alcanza la sesión para X tiempo más, a mi ritmo actual? */
@@ -657,7 +584,7 @@ public class MainActivity extends Activity {
             a.append(L.t("Sesiones: ")).append(s.sessions).append(delta(s.sessions, prev.sessions, false)).append('\n');
             a.append(L.t("Límites: ")).append(s.limits).append(delta(s.limits, prev.limits, true));
         }
-        stats.setText(a.toString());
+        stats.setText(hi(a.toString()));
 
         StringBuilder b = new StringBuilder(L.t("Resumen diario\n"));
         DateTimeFormatter f = DateTimeFormatter.ofPattern("EEE d/M", Locale.getDefault());
@@ -670,7 +597,7 @@ public class MainActivity extends Activity {
                     .append(day.sessions == 1 ? L.t(" sesión") : L.t(" sesiones"));
             if (day.limits > 0) b.append(" · ").append(day.limits).append(day.limits == 1 ? L.t(" límite") : L.t(" límites"));
         }
-        daily.setText(b.toString());
+        daily.setText(hi(b.toString()));
     }
 
     private static String ago(long ms) {
@@ -850,19 +777,6 @@ public class MainActivity extends Activity {
         root.addView(toggle(L.t("Vibraciones con patrón\n75%: 2 cortas · 90%: 3 cortas · 100%: 1 larga · reinicio: corta + larga"), "vibePatterns", true));
         root.addView(toggle(L.t("Modo ahorro automático\nCon menos de 20% de batería (sin cargar) o con el ahorro de energía activo: 30 FPS, sin fondo animado y widget quieto")
                 + (Power.saving(this) ? L.t("\nAhora: ACTIVO") : ""), "autoSave", true));
-
-        // Tiempo libre
-        section(root, L.t("Tiempo libre"));
-        root.addView(toggle(L.t("Mi franja libre\nPanel \"Esta noche\" en la pantalla principal y un aviso al empezar"), "freeOn", false));
-        if (p.getBoolean("freeOn", false)) {
-            Button fs = button(String.format(Locale.US, L.t("Empieza: %02d:00"), p.getInt("freeStart", 19)));
-            fs.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { askHour("freeStart", 19); } });
-            root.addView(fs);
-            Button fe = button(String.format(Locale.US, L.t("Termina: %02d:00"), p.getInt("freeEnd", 23)));
-            fe.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { askHour("freeEnd", 23); } });
-            root.addView(fe);
-        }
-        root.addView(text(L.t("Los pendientes se anotan en la pantalla principal. Te recuerdo 15 min antes de que vuelva el límite."), 13, th.dim));
 
         // Modos del teléfono y automatización
         section(root, L.t("Modos y automatización"));
@@ -1071,6 +985,42 @@ public class MainActivity extends Activity {
         t.setTextColor(color);
         t.setTypeface(Theme.font(false));
         return t;
+    }
+
+    /** Botón de ícono (emoji) para la barra de arriba. */
+    private TextView iconButton(String emoji, String desc) {
+        TextView t = new TextView(this);
+        t.setText(emoji);
+        t.setTextSize(24);
+        t.setGravity(Gravity.CENTER);
+        t.setContentDescription(desc);
+        t.setPadding(dp(10), dp(6), dp(10), dp(6));
+        android.util.TypedValue tv = new android.util.TypedValue();
+        getTheme().resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, tv, true);
+        t.setBackgroundResource(tv.resourceId);
+        t.setOnLongClickListener(new View.OnLongClickListener() {
+            public boolean onLongClick(View v) { Toast.makeText(MainActivity.this, v.getContentDescription(), Toast.LENGTH_SHORT).show(); return true; }
+        });
+        return t;
+    }
+
+    private static final java.util.regex.Pattern NUM = java.util.regex.Pattern.compile("\\d{1,2}:\\d{2}|\\d+(?:[.,]\\d+)?\\s?%|\\d+(?:[.,]\\d+)?(?:\\s?(?:h|m|d|s|min)\\b)?");
+
+    /** Resalta los datos: porcentajes con el color de su nivel, el resto de las cifras con el acento. */
+    private CharSequence hi(String s) {
+        if (s == null) return "";
+        android.text.SpannableString sp = new android.text.SpannableString(s);
+        java.util.regex.Matcher m = NUM.matcher(s);
+        while (m.find()) {
+            String g = m.group();
+            int col = th.accent;
+            if (g.endsWith("%")) {
+                try { col = th.level(Math.min(100, (int) Double.parseDouble(g.replace("%", "").replace(",", ".").trim()))); } catch (Exception ignored) {}
+            }
+            sp.setSpan(new android.text.style.ForegroundColorSpan(col), m.start(), m.end(), 0);
+            sp.setSpan(new android.text.style.StyleSpan(Typeface.BOLD), m.start(), m.end(), 0);
+        }
+        return sp;
     }
 
     private TextView card() {
@@ -1320,7 +1270,6 @@ public class MainActivity extends Activity {
                 }
                 if ("autoSave".equals(key)) { refreshAll(); showSettings(); return; }
                 if ("vibePatterns".equals(key) || "broadcast".equals(key)) return;
-                if ("freeOn".equals(key)) { Reminders.schedule(MainActivity.this); showSettings(); return; }
                 if ("appLock".equals(key)) { if (on) { unlocked = true; leftAt = 0; } return; }
                 if ("smart".equals(key)) {
                     startForegroundService(new Intent(MainActivity.this, UsageService.class).setAction(UsageService.ACTION_REFRESH));

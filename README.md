@@ -80,13 +80,14 @@
 - 🔐 **Session expired** alert with a button to sign in again.
 - ⌚ Alerts reach your Galaxy Watch if notifications are enabled for the app.
 
-### 🌙 Free time & to-dos *(new in 1.1)*
-- 📝 **To-do list** on the main screen for when your limit comes back, each with a free tag (e.g. *mod*, *personal*) and counts per tag. Tap to mark done, long-press to delete.
-- 🌙 **Your free-time window** (start and end hour): a **"Tonight"** panel with your margin, reset time and top to-dos, plus one notice when it starts. It uses a system alarm, not extra polling.
-- ⏳ **Reminder 15 minutes before your limit comes back**, only if you have open to-dos.
+### 🌙 Week used up & data health
 - 🪫 **Week used up**: the app, notification and widget show *"Week used up · back Sun 11 23:00 (in 2d 4h)"* and what's still free. The widget turns semi-transparent and stops animating (saves battery).
 - 👋 **Welcome back**: when the week resets, the reset notification tells you your fresh margin.
 - 🚀 **Overuse alert**: on the first day after the weekly reset, a single warning if you're going much faster than your previous weeks.
+- 🟢 **Freshness dot**: green, yellow or red next to the last update, in the app and the widget.
+- 🔄 **Sync status**: *"Sync OK · 14:32"* or *"Sync error · last data 14:32"*, plus a banner if there's been no new data for over an hour.
+- ⏳ **Time bars** under the meter: how much of the 5-hour window and of the 7-day week has passed.
+- 🎨 **Color everywhere**: the background tints with your usage level, and key numbers are highlighted (percentages in their level color).
 
 ### 🤖 Modes & automation
 - 🎯 **"Claude Focus" mode**: turns on Do Not Disturb when you hit 90% or 100%, and turns it off by itself when the session resets. It shows up next to your other modes, so Samsung *Modes and Routines* can react to it.
@@ -104,6 +105,8 @@
 
 ## ⚙️ Settings reference
 
+Settings open from the ⚙️ gear at the top right, and ♻️ at the top left refreshes. On the main screen, the chart, "Will it last?", stats and usage map are collapsible sections.
+
 Every option, section by section. Lists open and close with the round button on the right, and the screen stays where you were after each change.
 
 | Section | Options |
@@ -116,7 +119,6 @@ Every option, section by section. Lists open and close with the round button on 
 | 🔔 **Status bar & notification** | Status bar icon: big number / framed number / number inside a ring · Notification image: your pet / widget style / app icon only · Notification buttons: Refresh, Open Claude, Claude Code, See usage on Claude |
 | 🎞️ **Animations** | Animations on/off · **App smoothness**: automatic (your screen's refresh rate) or fixed 24, 30, 48, 60, 90, 120, 144, 165 FPS · Pulse past 90% · Confetti on reset · Seconds in the countdown |
 | ⏰ **Updates & alerts** | Smart interval · Alert 5 min before reset · Weekly summary on Mondays · Patterned vibrations · Automatic saver mode · Smart Do Not Disturb (shows your detected sleep hours) · Vibrate when refreshing from the widget or Quick Settings |
-| 🌙 **Free time** | My free-time window (on/off) · Start hour · End hour |
 | 🤖 **Modes & automation** | "Claude Focus" mode · Turn on at 90% or 100% · Grant Do Not Disturb access · Events for Tasker/MacroDroid (off by default) |
 | 🧩 **Home screen widget** | Background opacity · Widget style (7) · Minimal mode · Animate the widget · **Widget smoothness** (automatic or 24–165 FPS) · Current FPS indicator · On tap: refresh / open the app |
 | 💾 **Data** | Export history (CSV for Excel) · Backup (settings + history) · Restore backup · Weekly automatic backup · Choose backup folder · Back up now |
