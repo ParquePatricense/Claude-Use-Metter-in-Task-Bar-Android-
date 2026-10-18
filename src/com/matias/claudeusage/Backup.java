@@ -21,7 +21,7 @@ import java.util.TreeSet;
 /** Copia de seguridad: ajustes + historial + nombres de cuentas. No incluye sesiones (cookies). */
 final class Backup {
     private static final String[] SKIP = {"accounts", "active", "pct", "week", "reset", "weekReset", "updated",
-            "error", "extra", "alertWin", "alertLvl", "preWin", "expired", "lastChange", "status", "backupTree", "lastAutoBackup", "zenRule", "iconApplied"};
+            "error", "extra", "alertWin", "alertLvl", "preWin", "expired", "lastChange", "status", "backupTree", "lastAutoBackup", "zenRule", "iconApplied", "todoWin", "overWeek", "freeDay"};
 
     static void write(Context c, Uri uri) {
         try {

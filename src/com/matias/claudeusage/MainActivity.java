@@ -349,6 +349,8 @@ public class MainActivity extends Activity {
         handler.removeCallbacksAndMessages(null);
         final SharedPreferences p = Prefs.get(this);
         final boolean zen = p.getBoolean("zen", false);
+        freeCard = null;
+        todoBody = null;
 
         FrameLayout frame = new FrameLayout(this);
         frame.setBackgroundColor(th.bg);
@@ -399,6 +401,19 @@ public class MainActivity extends Activity {
             enough.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { askEnough(); } });
             root.addView(enough, margins(0, 12, 0, 0));
 
+            // Tiempo libre y pendientes (todo en esta pantalla)
+            if (p.getBoolean("freeOn", false)) {
+                TextView ft = text(Reminders.inFree(this) ? L.t("Ahora: tu tiempo libre") : L.t("Esta noche"), 15, th.accent);
+                ft.setTypeface(Theme.font(true));
+                root.addView(ft, margins(0, 16, 0, 4));
+                freeCard = card();
+                root.addView(freeCard);
+            } else {
+                freeCard = null;
+            }
+            todoBody = collapsible(root, "todos", L.t("Pendientes"), false);
+            fillTodos();
+
             LinearLayout tabs = new LinearLayout(this);
             tabs.setGravity(Gravity.CENTER);
             tabs.addView(t24);
@@ -434,6 +449,7 @@ public class MainActivity extends Activity {
                 fillStats(stats, daily, History.stats(pts, 7), History.stats(pts, 7, 7));
                 heat.set(History.heatmap(pts), th);
                 predict.setText(History.prediction(MainActivity.this, Usage.load(MainActivity.this)));
+                if (freeCard != null) freeCard.setText(Reminders.summary(MainActivity.this));
             }
         };
         t24.setOnClickListener(new View.OnClickListener() {
@@ -449,8 +465,9 @@ public class MainActivity extends Activity {
                 Usage u = Usage.load(MainActivity.this);
                 gauge.set(u, th);
                 mascot.set(u.hasData() ? u.pct : -1, th);
-                extra.setText(u.extra != null ? u.extra : "");
-                extra.setVisibility(u.extra != null ? View.VISIBLE : View.GONE);
+                String ex = u.weekOut() ? u.availLine() + (u.extra != null ? "\n" + u.extra : "") : u.extra;
+                extra.setText(ex != null ? ex : "");
+                extra.setVisibility(ex != null ? View.VISIBLE : View.GONE);
                 if (u.updated != shown && !zen) { shown = u.updated; reloadChart[0].run(); }
                 String upd = u.updated > 0
                         ? L.t("Actualizado hace ") + ago(System.currentTimeMillis() - u.updated)
@@ -468,6 +485,110 @@ public class MainActivity extends Activity {
                 handler.postDelayed(this, 1000);
             }
         });
+    }
+
+    private TextView freeCard;
+    private LinearLayout todoBody;
+
+    /** Lista de pendientes: tocar marca hecho, mantener apretado borra. */
+    private void fillTodos() {
+        if (todoBody == null) return;
+        todoBody.removeAllViews();
+        final JSONArray a = Todos.load(this);
+        int open = Todos.open(this);
+        ((TextView) todoBody.getTag()).setText(L.t("Pendientes") + (open > 0 ? " (" + open + ")" : ""));
+        String tags = Todos.tags(this);
+        if (!tags.isEmpty()) todoBody.addView(text(tags, 13, th.dim));
+        if (a.length() == 0) todoBody.addView(text(L.t("Anotá lo que querés hacer cuando vuelva el límite."), 14, th.dim));
+        boolean anyDone = false;
+        for (int i = 0; i < a.length(); i++) {
+            final int idx = i;
+            org.json.JSONObject o = a.optJSONObject(i);
+            boolean done = o.optBoolean("d");
+            anyDone |= done;
+            android.widget.CheckBox cb = new android.widget.CheckBox(this);
+            cb.setText(Todos.label(o));
+            cb.setTextColor(done ? th.dim : th.fg);
+            cb.setTextSize(15);
+            cb.setTypeface(Theme.font(false));
+            cb.setButtonTintList(tints());
+            cb.setChecked(done);
+            if (done) cb.setPaintFlags(cb.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+            cb.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) { Todos.toggle(MainActivity.this, idx); todosChanged(); }
+            });
+            cb.setOnLongClickListener(new View.OnLongClickListener() {
+                public boolean onLongClick(View v) {
+                    new AlertDialog.Builder(MainActivity.this).setMessage(L.t("¿Borrar este pendiente?"))
+                            .setPositiveButton(L.t("Borrar"), new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface d, int w) { Todos.remove(MainActivity.this, idx); todosChanged(); }
+                            }).setNegativeButton(L.t("Cancelar"), null).show();
+                    return true;
+                }
+            });
+            todoBody.addView(cb);
+        }
+        Button add = button(L.t("Agregar pendiente"));
+        add.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { askTodo(); } });
+        todoBody.addView(add, margins(0, 6, 0, 0));
+        if (anyDone) {
+            Button clear = button(L.t("Borrar los hechos"));
+            clear.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    JSONArray in = Todos.load(MainActivity.this), out = new JSONArray();
+                    for (int k = 0; k < in.length(); k++) if (!in.optJSONObject(k).optBoolean("d")) out.put(in.opt(k));
+                    Todos.save(MainActivity.this, out);
+                    todosChanged();
+                }
+            });
+            todoBody.addView(clear);
+        }
+    }
+
+    private void todosChanged() {
+        fillTodos();
+        if (freeCard != null) freeCard.setText(Reminders.summary(this));
+    }
+
+    private void askTodo() {
+        LinearLayout box = column();
+        box.setBackgroundColor(Color.TRANSPARENT);
+        box.setPadding(dp(20), dp(8), dp(20), 0);
+        final EditText what = new EditText(this);
+        what.setHint(L.t("Qué querés hacer"));
+        what.setFilters(new android.text.InputFilter[]{new android.text.InputFilter.LengthFilter(Todos.MAX_TEXT)});
+        final EditText tag = new EditText(this);
+        tag.setHint(L.t("Etiqueta (mod, Belka, personal…)"));
+        tag.setSingleLine(true);
+        tag.setFilters(new android.text.InputFilter[]{new android.text.InputFilter.LengthFilter(Todos.MAX_TAG)});
+        tag.setText(Prefs.get(this).getString("lastTag", ""));
+        box.addView(what);
+        box.addView(tag);
+        new AlertDialog.Builder(this).setTitle(L.t("Nuevo pendiente")).setView(box)
+                .setPositiveButton(L.t("Agregar"), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface d, int w) {
+                        String g = tag.getText().toString().trim();
+                        if (Todos.add(MainActivity.this, what.getText().toString(), g)) {
+                            Prefs.get(MainActivity.this).edit().putString("lastTag", g).apply();
+                            openState.put("todos", true);
+                            todosChanged();
+                        }
+                    }
+                }).setNegativeButton(L.t("Cancelar"), null).show();
+    }
+
+    /** Elegir una hora (0–23) para la franja libre. */
+    private void askHour(final String key, int def) {
+        String[] hs = new String[24];
+        for (int i = 0; i < 24; i++) hs[i] = String.format(Locale.US, "%02d:00", i);
+        new AlertDialog.Builder(this).setSingleChoiceItems(hs, Prefs.get(this).getInt(key, def), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface d, int w) {
+                Prefs.get(MainActivity.this).edit().putInt(key, w).apply();
+                Reminders.schedule(MainActivity.this);
+                d.dismiss();
+                showSettings();
+            }
+        }).show();
     }
 
     /** ¿Me alcanza la sesión para X tiempo más, a mi ritmo actual? */
@@ -729,6 +850,19 @@ public class MainActivity extends Activity {
         root.addView(toggle(L.t("Vibraciones con patrón\n75%: 2 cortas · 90%: 3 cortas · 100%: 1 larga · reinicio: corta + larga"), "vibePatterns", true));
         root.addView(toggle(L.t("Modo ahorro automático\nCon menos de 20% de batería (sin cargar) o con el ahorro de energía activo: 30 FPS, sin fondo animado y widget quieto")
                 + (Power.saving(this) ? L.t("\nAhora: ACTIVO") : ""), "autoSave", true));
+
+        // Tiempo libre
+        section(root, L.t("Tiempo libre"));
+        root.addView(toggle(L.t("Mi franja libre\nPanel \"Esta noche\" en la pantalla principal y un aviso al empezar"), "freeOn", false));
+        if (p.getBoolean("freeOn", false)) {
+            Button fs = button(String.format(Locale.US, L.t("Empieza: %02d:00"), p.getInt("freeStart", 19)));
+            fs.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { askHour("freeStart", 19); } });
+            root.addView(fs);
+            Button fe = button(String.format(Locale.US, L.t("Termina: %02d:00"), p.getInt("freeEnd", 23)));
+            fe.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { askHour("freeEnd", 23); } });
+            root.addView(fe);
+        }
+        root.addView(text(L.t("Los pendientes se anotan en la pantalla principal. Te recuerdo 15 min antes de que vuelva el límite."), 13, th.dim));
 
         // Modos del teléfono y automatización
         section(root, L.t("Modos y automatización"));
@@ -1186,6 +1320,7 @@ public class MainActivity extends Activity {
                 }
                 if ("autoSave".equals(key)) { refreshAll(); showSettings(); return; }
                 if ("vibePatterns".equals(key) || "broadcast".equals(key)) return;
+                if ("freeOn".equals(key)) { Reminders.schedule(MainActivity.this); showSettings(); return; }
                 if ("appLock".equals(key)) { if (on) { unlocked = true; leftAt = 0; } return; }
                 if ("smart".equals(key)) {
                     startForegroundService(new Intent(MainActivity.this, UsageService.class).setAction(UsageService.ACTION_REFRESH));

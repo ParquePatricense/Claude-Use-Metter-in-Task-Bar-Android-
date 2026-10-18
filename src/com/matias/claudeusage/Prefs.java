@@ -108,7 +108,7 @@ class Prefs {
     static void resetLive(Context c) {
         SharedPreferences.Editor e = get(c).edit();
         for (String k : new String[]{"pct", "week", "reset", "weekReset", "updated", "error", "extra",
-                "alertWin", "alertLvl", "preWin", "expired", "lastChange"}) e.remove(k);
+                "alertWin", "alertLvl", "preWin", "expired", "lastChange", "todoWin", "overWeek"}) e.remove(k);
         e.apply();
     }
 }

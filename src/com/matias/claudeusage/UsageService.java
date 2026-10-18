@@ -42,7 +42,7 @@ public class UsageService extends Service {
     private static final String CHANNEL = "usage";
     private static final String CH_ALERT = "alerts";
     private static final int NOTIF_ID = 1;
-    private static final int ID_LEVEL = 2, ID_RESET = 3, ID_EXPIRED = 4, ID_PRE = 5, ID_SUMMARY = 6;
+    private static final int ID_LEVEL = 2, ID_RESET = 3, ID_EXPIRED = 4, ID_PRE = 5, ID_SUMMARY = 6, ID_OVER = 7, ID_TODO = 8;
     private static final long SEC = 1000, MIN = 60 * SEC;
     private static final String HOME = "https://claude.ai/api/organizations";
 
@@ -89,6 +89,7 @@ public class UsageService extends Service {
         NotificationManager nm = getSystemService(NotificationManager.class);
         nm.createNotificationChannel(ch);
         channels(this);
+        Reminders.schedule(this);
 
         registerReceiver(screenOn, new IntentFilter(Intent.ACTION_SCREEN_ON));
         // Vuelve internet: reintenta si el último intento falló
@@ -128,7 +129,11 @@ public class UsageService extends Service {
         }
         NotificationChannel q = new NotificationChannel("alerts_quiet", L.t("Avisos en horario de sueño"), NotificationManager.IMPORTANCE_LOW);
         nm.createNotificationChannel(q);
+        // Un solo canal para los recordatorios (tiempo libre y pendientes)
+        nm.createNotificationChannel(new NotificationChannel("reminders", L.t("Recordatorios"), NotificationManager.IMPORTANCE_DEFAULT));
     }
+
+    static String reminderChannel(Context c) { return History.inQuiet(c) ? "alerts_quiet" : "reminders"; }
 
     private static String channelFor(Context c, int kind) {
         if (kind != K_ACH && History.inQuiet(c)) return "alerts_quiet";
@@ -330,16 +335,23 @@ public class UsageService extends Service {
         long win = n.reset > 0 ? Math.round(n.reset / 600000.0) : 0;
         long oldWin = p.getLong("alertWin", -1);
         int lvl = p.getInt("alertLvl", 0);
+        // Volvió la semana: agotada antes, o la fecha de reinicio avanzó
+        boolean weekBack = old.hasData() && (old.week >= 100 && n.week < 100
+                || old.weekReset > 0 && n.weekReset > old.weekReset + History.DAY && old.week > 0 && n.week < old.week);
+        String welcome = weekBack ? L.t("Volvió tu semana: ") + (100 - n.week) + L.t("% libre · sesión ") + (100 - n.pct) + L.t("% libre") : null;
+        boolean resetSent = false;
         if (win != oldWin) {
             // La ventana anterior terminó: aviso de reinicio
             if (oldWin > 0 && now >= oldWin * 600000 - 15 * MIN && old.pct > 0) {
-                alert(ID_RESET, L.t("Sesión de Claude reiniciada"), L.t("Volviste a 0%. Semana ") + n.week + "%", false, K_COIN);
+                alert(ID_RESET, L.t("Sesión de Claude reiniciada"), welcome != null ? welcome : L.t("Volviste a 0%. Semana ") + n.week + "%", false, K_COIN);
+                resetSent = true;
                 vibrate(this, VIB_RESET);
                 Focus.off(this);
                 Focus.broadcast(this, "reset", n.pct);
                 p.edit().putLong("lastReset", now).apply();
             }
             lvl = 0;
+            p.edit().remove("todoWin").apply();
             if (win > 0) p.edit().putInt("winCount", p.getInt("winCount", 0) + 1).apply();
         }
         int hit = n.pct >= 100 ? 100 : n.pct >= 90 ? 90 : n.pct >= 75 ? 75 : 0;
@@ -361,7 +373,57 @@ public class UsageService extends Service {
             vibrate(this, VIB_PRE);
             p.edit().putLong("preWin", win).apply();
         }
+        // Bienvenida dentro del mismo aviso de reinicio (no suma otra notificación)
+        if (welcome != null && !resetSent) {
+            alert(ID_RESET, L.t("Volvió tu semana de Claude"), welcome, false, K_COIN);
+            vibrate(this, VIB_RESET);
+        }
+        todoReminder(n, now);
+        overuse(n, now);
         p.edit().putLong("alertWin", win).putInt("alertLvl", lvl).apply();
+    }
+
+    /** 15 min antes de que vuelva el límite (sesión o semana), si hay pendientes abiertos. */
+    private void todoReminder(Usage n, long now) {
+        SharedPreferences p = Prefs.get(this);
+        long target = n.weekOut() ? n.weekReset : n.pct >= 75 ? n.reset : 0;
+        if (target <= now || target - now > 15 * MIN) return;
+        long key = target / 600000;
+        if (p.getLong("todoWin", 0) == key) return;
+        int open = Todos.open(this);
+        if (open == 0) return;
+        p.edit().putLong("todoWin", key).apply();
+        String text = open + L.t(" pendientes: ") + Todos.tags(this) + "\n" + Todos.top(this, 3);
+        Notification nt = new Notification.Builder(this, reminderChannel(this))
+                .setSmallIcon(R.drawable.ic_stat)
+                .setContentTitle((n.weekOut() ? L.t("Tu semana vuelve a las ") : L.t("Tu sesión vuelve a las ")) + Usage.clock(target))
+                .setContentText(text).setStyle(new Notification.BigTextStyle().bigText(text))
+                .setColor(Theme.widget(this).accent).setAutoCancel(true)
+                .setVisibility(Notification.VISIBILITY_PUBLIC).setContentIntent(openApp(false)).build();
+        getSystemService(NotificationManager.class).notify(ID_TODO, nt);
+    }
+
+    /** Primer día después del reinicio semanal: avisa si vas mucho más rápido que tus semanas anteriores. */
+    private void overuse(Usage n, long now) {
+        if (n.weekReset <= 0 || n.week < 20) return;
+        long start = n.weekReset - 7 * History.DAY;
+        if (now < start || now - start > History.DAY) return;
+        SharedPreferences p = Prefs.get(this);
+        long key = n.weekReset / 3_600_000;
+        if (p.getLong("overWeek", 0) == key) return;
+        java.util.List<History.Point> pts = History.load(this, start - 22 * History.DAY);
+        int sum = 0, weeks = 0;
+        for (int k = 1; k <= 3; k++) {
+            long a = start - k * 7 * History.DAY, b = a + History.DAY;
+            int max = -1;
+            for (History.Point pt : pts) if (pt.ts >= a + 10 * MIN && pt.ts < b) max = Math.max(max, pt.week);
+            if (max >= 0) { sum += max; weeks++; }
+        }
+        if (weeks == 0) return;
+        int avg = sum / weeks;
+        if (n.week < Math.max(avg + 10, avg * 3 / 2)) return;
+        p.edit().putLong("overWeek", key).apply();
+        alert(ID_OVER, L.t("Vas rápido esta semana"), L.t("Primer día: ") + n.week + L.t("% de la semana. Lo normal para vos: ") + avg + "%", false, K_WARN);
     }
 
     /** Experiencia de la mascota (días de uso) y logros. */
@@ -524,11 +586,12 @@ public class UsageService extends Service {
         RemoteViews small = new RemoteViews(getPackageName(), R.layout.notif_small);
         small.setTextViewText(R.id.n_session, u.sessionLine());
         small.setImageViewBitmap(R.id.n_sbar, Art.bar(Theme.widget(this), u.pct, 600, 12));
-        small.setTextViewText(R.id.n_week, u.error != null ? L.t("Sin conexión, reintentando…") : u.weekLine());
+        boolean out = u.weekOut();
+        small.setTextViewText(R.id.n_week, u.error != null ? L.t("Sin conexión, reintentando…") : out ? u.weekBackLine() : u.weekLine());
         RemoteViews big = new RemoteViews(getPackageName(), R.layout.notif_big);
         big.setTextViewText(R.id.n_session, u.sessionLine());
         big.setImageViewBitmap(R.id.n_sbar, Art.bar(Theme.widget(this), u.pct, 600, 14));
-        big.setTextViewText(R.id.n_week, u.weekLine());
+        big.setTextViewText(R.id.n_week, out ? u.weekBackLine() : u.weekLine());
         big.setImageViewBitmap(R.id.n_wbar, Art.bar(Theme.widget(this), u.week, 600, 14));
         // Color de la paleta, ajustado al fondo del panel (claro u oscuro)
         Theme t = Theme.widget(this);
@@ -538,11 +601,12 @@ public class UsageService extends Service {
         small.setTextColor(R.id.n_session, strong);
         big.setTextColor(R.id.n_session, strong);
         // Mascota animada (cuadros que el panel pasa a los FPS elegidos)
-        if (u.extra != null) big.setTextViewText(R.id.n_extra, u.extra);
+        String ex = out ? u.availLine() + (u.extra != null ? "\n" + u.extra : "") : u.extra;
+        if (ex != null) big.setTextViewText(R.id.n_extra, ex);
         else big.setViewVisibility(R.id.n_extra, View.GONE);
         Notification.Builder b = base(u.pct)
                 .setContentTitle(L.t("Sesión Claude: ") + u.pct + "%")
-                .setContentText(u.resetLine())
+                .setContentText(out ? u.weekBackLine() : u.resetLine())
                 .setStyle(new Notification.DecoratedCustomViewStyle())
                 .setCustomContentView(small)
                 .setCustomBigContentView(big);

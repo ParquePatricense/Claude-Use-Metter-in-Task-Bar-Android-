@@ -68,7 +68,7 @@ public class WidgetProvider extends AppWidgetProvider {
 
     private static String visualKey(Context c, Usage u, int fps) {
         SharedPreferences p = Prefs.get(c);
-        return u.pct + "/" + u.week + "/" + p.getInt("wStyle", 0) + "/" + p.getInt("palette", 0) + "/" + p.getInt("font", 0)
+        return u.pct + "/" + u.week + "/" + u.weekOut() + "/" + p.getInt("wStyle", 0) + "/" + p.getInt("palette", 0) + "/" + p.getInt("font", 0)
                 + "/" + Mascots.current(c) + "/" + Mascots.stage(c) + "/" + fps;
     }
 
@@ -127,6 +127,8 @@ public class WidgetProvider extends AppWidgetProvider {
         m.updateAppWidget(ids, v);
     }
 
+    private static boolean ghost(Usage u) { return u.weekOut(); }
+
     // Los layouts que no tienen un id ignoran ese dato
     private static RemoteViews fill(Context c, Theme t, int layout, Usage u, List<Bitmap> fr, int interval,
                                     Bitmap sbar, Bitmap wbar, Bitmap chart) {
@@ -137,18 +139,19 @@ public class WidgetProvider extends AppWidgetProvider {
         for (Bitmap b : fr) {
             RemoteViews one = new RemoteViews(c.getPackageName(), R.layout.widget_frame);
             one.setImageViewBitmap(R.id.w_frame, b);
+            if (ghost(u)) one.setInt(R.id.w_frame, "setImageAlpha", 110);
             v.addView(R.id.w_flip, one);
         }
         v.setInt(R.id.w_flip, "setFlipInterval", interval);
-        boolean ok = u.hasData();
+        boolean ok = u.hasData(), ghost = u.weekOut();
         v.setTextViewText(R.id.w_title, ok ? L.t("Sesión ") + u.pct + "%" : "Claude");
         v.setTextViewText(R.id.w_session, ok ? L.t("Sesión ") + u.pct + "%" : "Claude");
-        v.setTextViewText(R.id.w_reset, ok ? u.resetLine() : L.t("Sin datos todavía"));
-        v.setTextViewText(R.id.w_left, !ok ? "–" : u.reset > 0 ? "↻ " + Usage.left(u.reset) : L.t("Libre"));
-        v.setTextViewText(R.id.w_week, ok ? u.weekLine() : L.t("Abrí la app"));
+        v.setTextViewText(R.id.w_reset, !ok ? L.t("Sin datos todavía") : ghost ? u.weekBackLine() : u.resetLine());
+        v.setTextViewText(R.id.w_left, !ok ? "–" : ghost && u.weekReset > 0 ? "↻ " + Usage.left(u.weekReset) : u.reset > 0 ? "↻ " + Usage.left(u.reset) : L.t("Libre"));
+        v.setTextViewText(R.id.w_week, !ok ? L.t("Abrí la app") : ghost ? u.availLine() : u.weekLine());
         v.setTextViewText(R.id.w_wshort, ok ? L.t("Semana ") + u.week + "%" : "");
         v.setTextViewText(R.id.w_upd, u.updated > 0 ? L.t("Actualizado ") + Usage.clock(u.updated) : "");
-        for (int id : TEXTS) v.setTextColor(id, t.fg);
+        for (int id : TEXTS) v.setTextColor(id, ghost ? t.dim : t.fg);
         for (int id : DIMS) v.setTextColor(id, t.dim);
         if (layout == R.layout.widget_2x2 || layout == R.layout.widget_3x2
                 || layout == R.layout.widget_3x3 || layout == R.layout.widget_4x4) {
@@ -159,7 +162,8 @@ public class WidgetProvider extends AppWidgetProvider {
         }
         if (chart != null) v.setImageViewBitmap(R.id.w_chart, chart);
         v.setInt(R.id.w_bg, "setColorFilter", t.bg);
-        v.setInt(R.id.w_bg, "setImageAlpha", p.getInt("wAlpha", 90) * 255 / 100);
+        // Fantasma (semana agotada): fondo más transparente
+        v.setInt(R.id.w_bg, "setImageAlpha", p.getInt("wAlpha", 90) * 255 / 100 / (ghost ? 3 : 1));
         // Tocar: actualizar (con vibración) o abrir la app
         PendingIntent tap = p.getInt("wTap", 0) == 0
                 ? PendingIntent.getForegroundService(c, 3, new Intent(c, UsageService.class)

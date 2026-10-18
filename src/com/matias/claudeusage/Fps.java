@@ -40,7 +40,7 @@ final class Fps {
 
     /** FPS del widget: lo elegido (automático = tasa de la pantalla). */
     static int widget(Context c) {
-        if (Power.saving(c)) return 0;
+        if (Power.saving(c) || Usage.load(c).weekOut()) return 0;   // semana agotada: widget quieto
         int f = Prefs.get(c).getInt("wFps2", 60);
         return f == 0 ? maxRefresh(c) : f;
     }

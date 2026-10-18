@@ -80,6 +80,14 @@
 - 🔐 Aviso de **sesión vencida** con botón para volver a iniciar sesión.
 - ⌚ Los avisos llegan a tu Galaxy Watch si tenés las notificaciones de la app activadas.
 
+### 🌙 Tiempo libre y pendientes *(nuevo en la 1.1)*
+- 📝 **Lista de pendientes** en la pantalla principal para cuando vuelva el límite, con etiqueta libre (por ejemplo *mod*, *personal*) y cantidad por etiqueta. Tocá para marcar hecho, mantené apretado para borrar.
+- 🌙 **Tu franja libre** (hora de inicio y de fin): panel **"Esta noche"** con tu margen, la hora de reinicio y los primeros pendientes, y un aviso al empezar. Usa una alarma del sistema, sin consultas extra.
+- ⏳ **Recordatorio 15 minutos antes de que vuelva el límite**, solo si tenés pendientes abiertos.
+- 🪫 **Semana agotada**: la app, la notificación y el widget muestran *"Semana agotada · vuelve dom 11 23:00 (en 2d 4h)"* y lo que sigue libre. El widget queda semitransparente y sin animar (ahorra batería).
+- 👋 **Bienvenida**: cuando se reinicia la semana, el aviso de reinicio te dice tu margen nuevo.
+- 🚀 **Alerta de sobreuso**: el primer día después del reinicio semanal, un solo aviso si vas mucho más rápido que tus semanas anteriores.
+
 ### 🤖 Modos y automatización
 - 🎯 **Modo "Concentración Claude"**: activa No molestar al llegar al 90% o al 100% y lo apaga solo al reiniciarse la sesión. Aparece junto a tus otros modos, así *Modos y rutinas* de Samsung puede reaccionar a él.
 - 🔗 **Avisos para Tasker, MacroDroid y similares**: acción `com.matias.claudeusage.EVENT`, extra `event` = `level75`, `level90`, `limit` o `reset` (más `pct`).
@@ -108,6 +116,7 @@ Todas las opciones, sección por sección. Las listas se abren y cierran con el 
 | 🔔 **Barra de estado y notificación** | Ícono de la barra: número grande / con marco / dentro de un anillo · Imagen de la notificación: tu mascota / estilo del widget / solo el ícono · Botones: Actualizar, Ir a Claude, Claude Code, Ver uso en Claude |
 | 🎞️ **Animaciones** | Animaciones sí/no · **Fluidez de la app**: automática (tasa de refresco de la pantalla) o fija en 24, 30, 48, 60, 90, 120, 144, 165 FPS · Pulso al pasar el 90% · Confeti al reiniciarse · Segundos en la cuenta regresiva |
 | ⏰ **Actualización y avisos** | Intervalo inteligente · Aviso 5 min antes del reinicio · Resumen semanal los lunes · Vibraciones con patrón · Modo ahorro automático · No molestar inteligente (muestra tu horario de sueño detectado) · Vibrar al actualizar desde el widget o Ajustes rápidos |
+| 🌙 **Tiempo libre** | Mi franja libre (sí/no) · Hora de inicio · Hora de fin |
 | 🤖 **Modos y automatización** | Modo "Concentración Claude" · Activar al 90% o 100% · Dar permiso de No molestar · Avisos para Tasker/MacroDroid (apagados por defecto) |
 | 🧩 **Widget de inicio** | Opacidad del fondo · Estilo del widget (7) · Minimalista · Animar el widget · **Fluidez del widget** (automática o 24–165 FPS) · Indicador de FPS actual · Al tocar: actualizar / abrir la app |
 | 💾 **Datos** | Exportar historial (CSV para Excel) · Copia de seguridad (ajustes + historial) · Restaurar copia · Respaldo automático semanal · Elegir carpeta · Respaldar ahora |

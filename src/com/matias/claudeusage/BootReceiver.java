@@ -8,6 +8,7 @@ public class BootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context c, Intent i) {
         Prefs.migrate(c);
+        Reminders.schedule(c);
         if (Prefs.cookie(c) != null) {
             c.startForegroundService(new Intent(c, UsageService.class));
         }

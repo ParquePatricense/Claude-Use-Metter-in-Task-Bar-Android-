@@ -128,6 +128,7 @@ class GaugeView extends View {
         p.setColor(th.fg);
         String left = u.reset > 0 ? (secs ? Usage.leftSec(u.reset) : Usage.left(u.reset)) : "";
         String r = !u.hasData() ? L.t("Esperando datos…")
+                : u.weekOut() ? u.weekBackLine()
                 : u.reset > 0 ? L.t("Reinicia en ") + left + " · " + Usage.clock(u.reset) : L.t("Sin sesión activa");
         fit(p, r, w - 32 * d, 16 * d);
         c.drawText(r, cx, cy + s / 2 + (meter == 0 ? -4 : 14) * d, p);

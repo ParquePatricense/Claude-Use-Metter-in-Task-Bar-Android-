@@ -96,6 +96,25 @@ final class Usage {
         return L.t("Semana ") + week + "%" + (weekReset > 0 ? L.t(" · reinicia ") + dayClock(weekReset) : "");
     }
 
+    /** Estado compartido (widget, notificación, avisos): semana agotada = modo de espera. */
+    boolean weekOut() { return hasData() && week >= 100; }
+
+    /** "Semana agotada · vuelve dom 11 23:00 (en 2d 4h)". */
+    String weekBackLine() {
+        return L.t("Semana agotada") + (weekReset > 0 ? L.t(" · vuelve ") + dayClock(weekReset) + L.t(" (en ") + left(weekReset) + ")" : "");
+    }
+
+    /** Lo que queda mientras la semana está agotada, y si vuelve para el fin de semana. */
+    String availLine() {
+        String s = pct < 100 ? L.t("Sesión con ") + (100 - pct) + L.t("% libre, pero la semana está agotada") : L.t("Sesión y semana agotadas");
+        if (weekReset > 0) {
+            java.time.DayOfWeek d = Instant.ofEpochMilli(weekReset).atZone(ZoneId.systemDefault()).getDayOfWeek();
+            if (d == java.time.DayOfWeek.FRIDAY || d == java.time.DayOfWeek.SATURDAY) s += L.t(" · vuelve para el fin de semana");
+            else if (d == java.time.DayOfWeek.SUNDAY) s += L.t(" · vuelve el domingo");
+        }
+        return s;
+    }
+
     /** Cuenta regresiva con segundos: 4h 57m 12s. */
     static String leftSec(long t) {
         long s = Math.max(0, (t - System.currentTimeMillis()) / 1000);
