@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Inicio S26</string>
+    <string name="settings_app_name">Ajustes de Inicio S26</string>
+    <string name="lock_service_name">Inicio S26: apagar pantalla</string>
+    <string name="lock_service_desc">Solo permite que Inicio S26 apague la pantalla cuando tocás dos veces un espacio vacío. No lee el contenido de la pantalla, no recibe eventos y no realiza ninguna otra acción.</string>
+
+    <!-- Inicio -->
+    <string name="search_hint">Buscar</string>
+    <string name="set_home_page">Fijar como página principal</string>
+    <string name="home_page_set">Página principal actualizada</string>
+    <string name="add_page">Agregar página</string>
+    <string name="delete_page">Eliminar página</string>
+    <string name="delete_page_q">¿Eliminar esta página?</string>
+    <string name="delete_page_msg">Se quitarán de Inicio los elementos de esta página. Las apps seguirán en la pantalla de apps.</string>
+    <string name="cant_delete_last_page">Tiene que quedar al menos una página</string>
+    <string name="delete">Eliminar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="wallpaper">Fondo de pantalla</string>
+    <string name="themes">Estilo</string>
+    <string name="widgets">Widgets</string>
+    <string name="settings">Ajustes</string>
+    <string name="widget_error">No se pudo cargar el widget</string>
+    <string name="app_unavailable">La app no está disponible</string>
+    <string name="no_space">No hay espacio en esta página</string>
+    <string name="folder_default">Carpeta</string>
+    <string name="folder_name">Nombre de carpeta</string>
+    <string name="folder_color">Color de carpeta</string>
+    <string name="add_apps">Agregar apps</string>
+    <string name="done">Listo</string>
+    <string name="error">No se pudo completar</string>
+
+    <!-- Menú contextual -->
+    <string name="app_info">Info</string>
+    <string name="add_to_home">Agregar a Inicio</string>
+    <string name="added_to_home">Agregado a Inicio</string>
+    <string name="hide">Ocultar</string>
+    <string name="rename">Renombrar</string>
+    <string name="remove">Eliminar</string>
+    <string name="remove_folder">Eliminar</string>
+    <string name="uninstall">Desinstalar</string>
+    <string name="resize">Tamaño</string>
+    <string name="widget_settings">Ajustes</string>
+    <string name="add">Agregar</string>
+
+    <!-- Pantalla de apps -->
+    <string name="no_results">Sin resultados</string>
+    <string name="search_play">Buscar en Play Store</string>
+    <string name="more_options">Más opciones</string>
+    <string name="hidden_apps">Apps ocultas</string>
+    <string name="hidden_apps_sum">Elegí qué apps no se muestran</string>
+    <string name="hide_categories">Ocultar categorías</string>
+    <string name="show_categories">Mostrar categorías</string>
+    <string name="search_widgets">Buscar widgets</string>
+    <plurals name="widget_count">
+        <item quantity="one">%d widget</item>
+        <item quantity="other">%d widgets</item>
+    </plurals>
+
+    <!-- Ajustes -->
+    <string name="settings_title">Ajustes de Inicio</string>
+    <string name="back">Atrás</string>
+    <string name="sec_home">Pantalla de inicio</string>
+    <string name="sec_home_sum">Cuadrícula, dock, buscador, márgenes</string>
+    <string name="sec_icons">Íconos y carpetas</string>
+    <string name="sec_icons_sum">Tamaño, forma, etiquetas, estilo de carpetas</string>
+    <string name="sec_drawer">Pantalla de apps</string>
+    <string name="sec_drawer_sum">Cuadrícula, categorías, apps ocultas</string>
+    <string name="sec_style">Estilo y tema</string>
+    <string name="sec_style_sum">Modo oscuro, acento, transparencia, fondo, animaciones</string>
+    <string name="sec_gestures">Gestos</string>
+    <string name="sec_gestures_sum">Deslizar, doble toque</string>
+    <string name="sec_default">Launcher predeterminado</string>
+    <string name="is_default">Inicio S26 es la app de inicio</string>
+    <string name="not_default">Tocá para establecerlo como app de inicio</string>
+    <string name="back_to_oneui">Volver a One UI Home</string>
+    <string name="back_to_oneui_sum">Abre Ajustes › App de inicio para elegir One UI Home</string>
+    <string name="sec_about">Acerca de y limitaciones</string>
+    <string name="sec_about_sum">Versión, asistente, qué no puede hacer un launcher</string>
+
+    <string name="home_grid">Cuadrícula de pantalla de inicio</string>
+    <string name="dock_icons">Íconos en el dock</string>
+    <string name="dock_bg">Fondo del dock</string>
+    <string name="home_search">Barra de búsqueda</string>
+    <string name="home_search_sum">Muestra el buscador sobre el dock</string>
+    <string name="margin_h">Margen lateral</string>
+    <string name="margin_v">Margen vertical</string>
+    <string name="add_new_apps">Agregar apps nuevas a Inicio</string>
+    <string name="lock_layout">Bloquear diseño de Inicio</string>
+    <string name="lock_layout_sum">Evita mover o eliminar elementos sin querer</string>
+
+    <string name="icon_size">Tamaño de íconos</string>
+    <string name="icon_shape">Forma de íconos</string>
+    <string name="shape_squircle">Squircle Galaxy</string>
+    <string name="shape_circle">Círculo</string>
+    <string name="shape_rounded">Cuadrado redondeado</string>
+    <string name="icon_frames">Marcos de íconos</string>
+    <string name="icon_frames_sum">Coloca íconos antiguos sobre un fondo blanco para uniformarlos</string>
+    <string name="themed_icons">Íconos temáticos</string>
+    <string name="themed_icons_sum">Tiñe con el color de acento los íconos que lo admiten (Android 13+)</string>
+    <string name="show_labels">Mostrar nombres de apps</string>
+    <string name="label_size">Tamaño de texto</string>
+    <string name="folder_style">Estilo de carpetas</string>
+    <string name="folder_2x2">Vista previa 2 × 2 (íconos grandes)</string>
+    <string name="folder_3x3">Vista previa 3 × 3</string>
+    <string name="folder_color_default">Color de carpetas nuevas</string>
+    <string-array name="folder_colors">
+        <item>Predeterminado</item>
+        <item>Azul</item>
+        <item>Verde</item>
+        <item>Amarillo</item>
+        <item>Coral</item>
+        <item>Violeta</item>
+        <item>Turquesa</item>
+        <item>Grafito</item>
+    </string-array>
+
+    <string name="drawer_grid">Cuadrícula de pantalla de apps</string>
+    <string name="categories">Categorías</string>
+    <string name="categories_sum">Filtros arriba de la pantalla de apps, según la categoría que declara cada app</string>
+    <string name="drawer_note">Deslizá hacia arriba en Inicio para abrir la pantalla de apps y hacia abajo para cerrarla. El buscador está abajo, al alcance del pulgar, como en One UI 8 y 9.</string>
+
+    <string name="dark_mode">Modo oscuro</string>
+    <string name="theme_system">Según el sistema</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Oscuro</string>
+    <string name="accent">Color de acento</string>
+    <string name="transparency">Opacidad de paneles</string>
+    <string name="corner_radius">Radio de bordes</string>
+    <string name="blur">Desenfoque</string>
+    <string name="blur_sum">Fondo esmerilado en apps y carpetas (se desactiva solo en ahorro de energía)</string>
+    <string name="wallpaper_system">Fondos de Galaxy y galería</string>
+    <string name="wallpaper_system_sum">Abre el selector de fondos del sistema</string>
+    <string name="apply_wallpaper">Aplicar fondo</string>
+    <string name="wp_home">Pantalla de inicio</string>
+    <string name="wp_home_lock">Inicio y pantalla de bloqueo</string>
+    <string name="applying">Aplicando…</string>
+    <string name="wp_aurora">Aurora</string>
+    <string name="wp_dawn">Amanecer</string>
+    <string name="wp_titanium">Titanio</string>
+    <string name="wp_mint">Menta</string>
+    <string name="animations">Animaciones</string>
+    <string name="anim_speed">Velocidad de animaciones</string>
+    <string name="fast">Rápidas</string>
+    <string name="normal">Normales</string>
+    <string name="relaxed">Suaves</string>
+
+    <string name="swipe_up">Deslizar hacia arriba</string>
+    <string name="swipe_down">Deslizar hacia abajo</string>
+    <string name="double_tap">Doble toque en espacio vacío</string>
+    <string name="act_none">Nada</string>
+    <string name="act_apps">Abrir pantalla de apps</string>
+    <string name="act_notifications">Abrir notificaciones</string>
+    <string name="act_search">Abrir búsqueda</string>
+    <string name="act_lock">Apagar pantalla</string>
+    <string name="act_edit">Editar Inicio</string>
+    <string name="gestures_note">\"Apagar pantalla\" usa un servicio de accesibilidad mínimo que tenés que activar vos en Ajustes › Accesibilidad › Apps instaladas. Es la única vía que Android ofrece a apps comunes sin pedir permisos de administrador; no lee nada de la pantalla.</string>
+    <string name="lock_service">Servicio \"Apagar pantalla\"</string>
+    <string name="enabled">Activado</string>
+    <string name="disabled">Desactivado · tocá para abrir Accesibilidad</string>
+    <string name="lock_setup_title">Activar \"Apagar pantalla\"</string>
+    <string name="lock_setup_msg">Para apagar la pantalla con doble toque, activá \"Inicio S26: apagar pantalla\" en Ajustes › Accesibilidad › Apps instaladas.\n\nEl servicio no lee contenido ni eventos: solo ejecuta la acción de bloqueo del sistema.</string>
+    <string name="open_settings">Abrir Ajustes</string>
+
+    <string name="version">Versión</string>
+    <string name="run_wizard">Repetir asistente de configuración</string>
+    <string name="open_oneui">Abrir One UI Home</string>
+    <string name="open_oneui_sum">Lo abre sin cambiar el predeterminado</string>
+    <string name="oneui_not_found">One UI Home no está disponible</string>
+    <string name="limitations">Lo que un launcher no puede hacer</string>
+    <string name="limitations_text">• El panel de notificaciones, los ajustes rápidos, la pantalla de bloqueo, Edge Panels, S Pen y Galaxy AI siguen siendo los de One UI: un launcher no los reemplaza.\n• La vista de Recientes y la animación de \"volver a Inicio\" las dibuja el sistema (One UI Home): una app de inicio de terceros no puede reemplazarlas.\n• Los puntos de notificación sobre los íconos requieren acceso a notificaciones; Inicio S26 no lo pide.\n• Los accesos directos de apps (mantener pulsado) solo están disponibles cuando Inicio S26 es el launcher predeterminado.\n• Abrir notificaciones con un gesto usa una interfaz del sistema no documentada; si alguna actualización la bloquea, el gesto abre la búsqueda.</string>
+
+    <!-- Asistente -->
+    <string name="next">Siguiente</string>
+    <string name="finish">Empezar</string>
+    <string name="recommended">Recomendado para S22 Ultra</string>
+    <string name="ob_welcome">Te damos la bienvenida a Inicio S26</string>
+    <string name="ob_welcome_sub">La experiencia de inicio del Galaxy S26 Ultra en tu S22 Ultra. No modifica el sistema: podés volver a One UI Home cuando quieras.</string>
+    <string name="ob_layout">Diseño inicial</string>
+    <string name="ob_layout_sub">Podés cambiar cada detalle después en Ajustes de Inicio.</string>
+    <string name="layout_galaxy">Galaxy S26</string>
+    <string name="layout_galaxy_sum">4 × 5, buscador sobre el dock, pantalla de apps 5 × 6</string>
+    <string name="layout_compact">Compacto</string>
+    <string name="layout_compact_sum">5 × 6 y dock de 5: más apps a la vista</string>
+    <string name="layout_minimal">Mínimo</string>
+    <string name="layout_minimal_sum">Dock con fondo, sin buscador</string>
+    <string name="ob_grid">Cuadrícula</string>
+    <string name="ob_grid_sub">Cantidad de columnas y filas de la pantalla de inicio.</string>
+    <string name="ob_theme">Tema</string>
+    <string name="ob_theme_sub">Modo claro u oscuro, color de acento y fondo de pantalla.</string>
+    <string name="ob_gestures">Gestos</string>
+    <string name="ob_gestures_sub">Deslizar hacia arriba abre la pantalla de apps. Elegí qué hacen los demás gestos.</string>
+    <string name="swipe_down_notif">Deslizar abajo: notificaciones</string>
+    <string name="swipe_down_notif_sum">Como en One UI Home</string>
+    <string name="swipe_down_search">Deslizar abajo: búsqueda</string>
+    <string name="swipe_down_search_sum">Abre el buscador de apps</string>
+    <string name="double_tap_lock">Doble toque para apagar la pantalla</string>
+    <string name="double_tap_lock_sum">Requiere activar un servicio de accesibilidad mínimo</string>
+    <string name="ob_default">Establecer como predeterminado</string>
+    <string name="ob_default_sub">Para que el botón y el gesto de Inicio abran Inicio S26.</string>
+    <string name="set_default">Establecer Inicio S26</string>
+    <string name="set_default_sum">Abre el diálogo oficial del sistema</string>
+    <string name="ob_default_note">Para volver a One UI Home: Ajustes › Apps › Elegir apps predeterminadas › App de inicio › One UI Home. También desde Ajustes de Inicio S26 › Volver a One UI Home. Desinstalar Inicio S26 restaura One UI Home automáticamente.</string>
+</resources>

@@ -1,0 +1,1 @@
+package androidx.test.espresso; public interface IdlingResource { String getName(); boolean isIdleNow(); void registerIdleTransitionCallback(ResourceCallback c); interface ResourceCallback { void onTransitionToIdle(); } }

@@ -1,0 +1,32 @@
+// Pruebas de humo en JVM (Robolectric 4.16, Android 16, pantalla del S22 Ultra 384×823 dp @ 450 dpi).
+// Requiere haber corrido antes tools/build.sh debug. Uso: gradle -p tests/robolectric test
+// Los stubs de androidx.test reemplazan a la dependencia de Google Maven (no accesible en el entorno de build).
+plugins { id 'java' }
+repositories { mavenCentral() }
+def app = file('../..').canonicalPath
+def androidJar = System.getenv('ANDROID_JAR_CODE') ?: '/tmp/sdkdl/android36.jar'
+def kotlinStdlib = System.getenv('KOTLIN_STDLIB') ?: '/opt/kt/kotlinc/lib/kotlin-stdlib.jar'
+configurations.all { exclude group: 'androidx.test'; exclude group: 'androidx.test.espresso' }
+sourceSets { stubs { java.srcDir 'stubs' } }
+dependencies {
+  stubsCompileOnly files(androidJar)
+  testCompileOnly files(androidJar)
+  testImplementation 'org.robolectric:robolectric:4.16'
+  testImplementation 'junit:junit:4.13.2'
+  testRuntimeOnly 'org.robolectric:android-all-instrumented:16-robolectric-13921718-i7'
+  testImplementation sourceSets.stubs.output
+  testImplementation files("$app/build/debug/classes", kotlinStdlib)
+}
+tasks.register('testConfig') {
+  def out = file("$buildDir/generated/testcfg/com/android/tools/test_config.properties")
+  outputs.file out
+  doLast { out.parentFile.mkdirs(); out.text = "android_resource_apk=$app/build/debug/unsigned.apk\nandroid_merged_manifest=$app/app/src/main/AndroidManifest.xml\nandroid_custom_package=com.s26home.launcher\n" }
+}
+sourceSets.test.resources.srcDir "$buildDir/generated/testcfg"
+processTestResources.dependsOn testConfig
+test {
+  systemProperty 'robolectric.graphicsMode', 'NATIVE'
+  systemProperty 'shots.dir', System.getenv('SHOTS_DIR') ?: "$buildDir/shots"
+  testLogging { events 'failed', 'passed'; exceptionFormat 'full' }
+  maxHeapSize = '3g'
+}
