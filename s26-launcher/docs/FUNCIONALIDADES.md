@@ -53,7 +53,7 @@ desenfoque, 4 fondos generados en el equipo (Aurora, Amanecer, Titanio, Menta) o
 sistema, animaciones on/off y velocidad.
 
 ## Rendimiento (S22 Ultra)
-- Sin AndroidX ni Compose: APK release de 216 KB, arranque sin inflado XML.
+- Sin AndroidX ni Compose: APK de 240 KB, arranque sin inflado XML.
 - Íconos generados bajo demanda en un hilo propio, caché LRU acotada (≤32 MB).
 - Ícono + etiqueta dibujados en una sola View; animaciones solo con propiedades de render (GPU).
 - Widgets reutilizados entre re-enlaces (no se recrean ni parpadean).
@@ -87,6 +87,11 @@ Solo permisos normales (sin diálogos): `SET_WALLPAPER`, `EXPAND_STATUS_BAR`,
   pulsación larga + arrastre, modo edición, selector de widgets, cambio de página por deslizamiento,
   persistencia, cambio de cuadrícula en vivo, todas las pantallas de ajustes y del asistente,
   claro y oscuro. Las pruebas encontraron y se corrigieron 2 cierres al iniciar.
+- **1.0.0 no abría en el teléfono**: la librería estándar de Kotlin 2.1 contiene lambdas con
+  `invokedynamic`/`LambdaMetafactory`, que el conversor `dx` no adapta y Android no puede ejecutar
+  (Robolectric corre en la JVM de escritorio y no lo detectó). En 1.0.1: kotlin-stdlib 1.9.24 +
+  ProGuard, el build falla si el DEX tiene algún `invoke-custom` o llama a una API que no exista en
+  Android 16 (`tools/apicheck.py`), y Robolectric prueba el mismo bytecode que va en el APK.
 - **No probado en el S22 Ultra físico** (el entorno de compilación no tiene emulador):
   desenfoque real, widgets reales, gestos del sistema y rendimiento a 120 Hz deben confirmarse
   en el equipo.

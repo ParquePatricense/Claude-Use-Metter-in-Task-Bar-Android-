@@ -5,7 +5,6 @@ plugins { id 'java' }
 repositories { mavenCentral() }
 def app = file('../..').canonicalPath
 def androidJar = System.getenv('ANDROID_JAR_CODE') ?: '/tmp/sdkdl/android36.jar'
-def kotlinStdlib = System.getenv('KOTLIN_STDLIB') ?: '/opt/kt/kotlinc/lib/kotlin-stdlib.jar'
 configurations.all { exclude group: 'androidx.test'; exclude group: 'androidx.test.espresso' }
 sourceSets { stubs { java.srcDir 'stubs' } }
 dependencies {
@@ -15,7 +14,8 @@ dependencies {
   testImplementation 'junit:junit:4.13.2'
   testRuntimeOnly 'org.robolectric:android-all-instrumented:16-robolectric-13921718-i7'
   testImplementation sourceSets.stubs.output
-  testImplementation files("$app/build/debug/classes", kotlinStdlib)
+  // Se prueba el mismo bytecode que va al APK (ProGuard + kotlin-stdlib 1.9.24).
+  testImplementation files("$app/build/debug/min.jar")
 }
 tasks.register('testConfig') {
   def out = file("$buildDir/generated/testcfg/com/android/tools/test_config.properties")

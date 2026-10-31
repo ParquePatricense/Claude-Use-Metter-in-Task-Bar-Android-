@@ -1,14 +1,14 @@
 # Instalación
 
 ## 1. Instalar el APK
-1. Copiá `InicioS26-1.0.0-release.apk` al teléfono (o descargalo desde GitHub en el propio S22 Ultra).
+1. Copiá `InicioS26-1.0.1-release.apk` al teléfono (o descargalo desde GitHub en el propio S22 Ultra).
 2. Abrilo desde **Mis archivos**. Si aparece *"Por tu seguridad, el teléfono no puede instalar apps
    desconocidas"*, tocá **Ajustes** y activá **Permitir de esta fuente** para Mis archivos (o el navegador).
 3. Si **Auto Blocker** (Ajustes › Seguridad y privacidad › Auto Blocker) está activo, desactivalo
    temporalmente: bloquea instalaciones fuera de Galaxy Store / Play Store.
 4. Instalar. Play Protect puede mostrar un aviso por ser una app no publicada: **Instalar de todas formas**.
 
-Alternativa por cable: `adb install InicioS26-1.0.0-release.apk`
+Alternativa por cable: `adb install InicioS26-1.0.1-release.apk`
 
 ## 2. Primera ejecución
 Aparecen dos íconos: **Ajustes de Inicio S26** (configuración) y, al tocar Inicio, el asistente:

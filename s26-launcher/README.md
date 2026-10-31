@@ -18,8 +18,8 @@ sistema**: se instala como cualquier APK, se elige como app de inicio y se desin
 
 | Archivo | Uso |
 |---|---|
-| `dist/InicioS26-1.0.0-release.apk` (216 KB) | Uso diario. ProGuard + firma con llave propia. |
-| `dist/InicioS26-1.0.0-debug.apk` (≈930 KB) | Pruebas. Depurable, firma de debug. |
+| `dist/InicioS26-1.0.1-release.apk` (240 KB) | Uso diario. Firma con llave propia. |
+| `dist/InicioS26-1.0.1-debug.apk` (236 KB) | Pruebas. Depurable, firma de debug. |
 
 Las dos firmas son distintas: para cambiar de una a otra hay que desinstalar primero.
 

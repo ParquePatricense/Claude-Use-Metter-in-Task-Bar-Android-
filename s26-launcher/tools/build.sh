@@ -20,7 +20,9 @@ OUT=build/$MODE
 JAR_CODE=${ANDROID_JAR_CODE:-/tmp/sdkdl/android36.jar}
 JAR_RES=${ANDROID_JAR_RES:-/tmp/sdkdl/android34.jar}
 KOTLINC=${KOTLINC:-/opt/kt/kotlinc/bin/kotlinc}
-KLIB=$(dirname "$KOTLINC")/../lib
+# kotlin-stdlib 1.9.24: la 2.x trae lambdas con invokedynamic (LambdaMetafactory) que dx no
+# desazucara y que Android no puede ejecutar. Con 1.9.24 + ProGuard no queda ninguna.
+KSTDLIB=${KOTLIN_STDLIB:-/opt/pg/kstd-1.9.24.jar}
 PG=${PROGUARD_CP:-/opt/pg/proguard-base.jar:/opt/pg/proguard-core.jar:/opt/pg/kotlin-metadata-jvm.jar:/opt/pg/kotlin-stdlib.jar:/opt/pg/gson.jar:/opt/pg/log4j-api.jar:/opt/pg/log4j-core.jar:/opt/pg/json.jar}
 VERSION_NAME=$(grep -o 'android:versionName="[^"]*"' $APP/AndroidManifest.xml | cut -d'"' -f2)
 export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:-}"
@@ -36,7 +38,7 @@ javac -nowarn -encoding UTF-8 -source 8 -target 8 -bootclasspath "$JAR_CODE" -d 
 echo "▸ Kotlin (kotlinc)"
 "$KOTLINC" $(find $APP/java -name '*.kt') \
   -no-stdlib -no-reflect \
-  -cp "$JAR_CODE:$KLIB/kotlin-stdlib.jar:$OUT/rclasses" \
+  -cp "$JAR_CODE:$KSTDLIB:$OUT/rclasses" -api-version 1.9 \
   -jvm-target 1.8 -Xlambdas=class -Xsam-conversions=class -Xstring-concat=inline \
   -Xno-param-assertions -Xno-call-assertions -Xno-receiver-assertions \
   -nowarn -d "$OUT/classes" 2>&1 | grep -v '^warning' || true
@@ -44,23 +46,30 @@ echo "▸ Kotlin (kotlinc)"
 cp -r "$OUT/rclasses/." "$OUT/classes/"
 
 # kotlin-stdlib sin las clases multi-release (dx no entiende module-info de Java 9).
-cp "$KLIB/kotlin-stdlib.jar" "$OUT/stdlib.jar"
+cp "$KSTDLIB" "$OUT/stdlib.jar"
 zip -q -d "$OUT/stdlib.jar" 'META-INF/versions/*' 'META-INF/*.kotlin_module' >/dev/null 2>&1 || true
 
 (cd "$OUT/classes" && jar cf ../app.jar .)
-INPUT="$OUT/app.jar $OUT/stdlib.jar"
-if [ "$MODE" = release ]; then
-  echo "▸ ProGuard (reducción + optimización)"
-  java -cp "$PG" proguard.ProGuard \
-    -injars "$OUT/app.jar" -injars "$OUT/stdlib.jar"'(!META-INF/**)' \
-    -outjars "$OUT/min.jar" -libraryjars "$JAR_CODE" \
-    @tools/proguard.pro > "$OUT/proguard.log" 2>&1 || { tail -40 "$OUT/proguard.log"; exit 1; }
-  INPUT="$OUT/min.jar"
-fi
+# ProGuard en ambos modos: quita del stdlib todo lo que no se usa (incluido código con invokedynamic).
+# debug: solo reducción (sin optimizar) · release: reducción + optimización.
+echo "▸ ProGuard"
+EXTRA="-dontoptimize"; [ "$MODE" = release ] && EXTRA="-dontoptimize -dontpreverify"
+java -cp "$PG" proguard.ProGuard \
+  -injars "$OUT/app.jar" -injars "$OUT/stdlib.jar"'(!META-INF/**)' \
+  -outjars "$OUT/min.jar" -libraryjars "$JAR_CODE" \
+  @tools/proguard.pro $EXTRA > "$OUT/proguard.log" 2>&1 || { tail -40 "$OUT/proguard.log"; exit 1; }
+INPUT="$OUT/min.jar"
 
 echo "▸ DEX (dx)"
 dalvik-exchange --dex --min-sdk-version=26 --output="$OUT/classes.dex" $INPUT 2>&1 | grep -v '^warning\|JAVA_TOOL' || true
 [ -f "$OUT/classes.dex" ] || { echo "✗ falló dx"; exit 1; }
+# Control: Android no tiene LambdaMetafactory; un invoke-custom en el DEX = cierre en el teléfono.
+if command -v dexdump >/dev/null; then
+  N=$(dexdump -d "$OUT/classes.dex" 2>/dev/null | grep -c "invoke-custom" || true)
+  [ "$N" = 0 ] || { echo "✗ el DEX contiene $N invoke-custom (no ejecutable en Android)"; exit 1; }
+  echo "  sin invoke-custom ✓"
+  python3 tools/apicheck.py "$OUT/classes.dex" "$JAR_CODE" < /dev/null || { echo "✗ llamadas a APIs inexistentes en Android"; exit 1; }
+else echo "  (aviso: instalá dexdump para verificar invoke-custom)"; fi
 
 echo "▸ Empaquetado"
 DBG=""; [ "$MODE" = debug ] && DBG="--debug-mode"

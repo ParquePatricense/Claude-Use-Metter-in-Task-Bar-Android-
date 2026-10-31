@@ -152,7 +152,7 @@ class AppRepository(private val app: LauncherApp) {
                 )
             (la.getShortcuts(q, a.user) ?: emptyList())
                 .filter { it.isEnabled }
-                .sortedWith(compareBy({ if (it.isDeclaredInManifest) 0 else 1 }, { it.rank }))
+                .sortedBy { (if (it.isDeclaredInManifest) 0 else 100000) + it.rank }
                 .take(4)
         } catch (e: Exception) { emptyList() }
     }

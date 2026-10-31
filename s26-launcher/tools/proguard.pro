@@ -1,6 +1,5 @@
 # Reglas ProGuard para Inicio S26 (release).
 -dontobfuscate
--dontpreverify
 -optimizationpasses 3
 -optimizations !code/simplification/arithmetic,!code/simplification/cast,!field/*,!class/merging/*,!code/allocation/variable
 -allowaccessmodification
